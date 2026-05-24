@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impressum &mdash; Digitale Edition deutscher Idealismus</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.dataset.theme=localStorage.getItem('idealismus-theme')||''</script>
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="site-title">
+    <span class="site-title-eyebrow">Digitale Edition</span>
+    <span class="site-title-main">Deutscher Idealismus</span>
+  </a>
+  <nav class="sitenav">
+    <ul>
+      <li><a href="index.html">Editionen</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()" title="Darstellung wechseln"></button></li>
+    </ul>
+  </nav>
+</header>
+<div class="legal-container" style="padding-top:calc(var(--header-h) + 3rem);">
+  <div class="section-label">Rechtliches</div>
+  <h1 style="font-family:var(--font-display);font-size:2rem;font-weight:400;color:var(--text-ink);margin-bottom:2rem;">Impressum</h1>
+  <p style="margin-bottom:1rem;">Angaben gem&auml;&szlig; &sect;&nbsp;5 TMG</p>
+  <p style="margin-bottom:2rem;color:var(--text-muted);">
+    Dieses Projekt ist ein nicht-kommerzielles, wissenschaftliches Vorhaben
+    zur digitalen Bereitstellung gemeinfreier philosophischer Texte.
+  </p>
+  <p><a href="index.html">&larr; Zur&uuml;ck zur &Uuml;bersicht</a></p>
+</div>
+<footer class="site-footer">
+  <h3>Digitale Edition deutscher Idealismus</h3>
+  <p>Forschungsportal</p>
+</footer>
+<script>
+function toggleTheme(){var t=document.documentElement.dataset.theme==='light'?'':'light';document.documentElement.dataset.theme=t;localStorage.setItem('idealismus-theme',t)}
+</script>
+</body>
+</html>

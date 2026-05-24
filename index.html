@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Digitale Edition deutscher Idealismus</title>
+  <meta name="description" content="Frei zugängliche digitale Editionen der Hauptwerke des deutschen Idealismus: Kant, Fichte, Schelling, Hegel — texttreu digitalisiert und durchsuchbar.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Digitale Edition deutscher Idealismus">
+  <meta property="og:description" content="Frei zugängliche digitale Editionen der Hauptwerke des deutschen Idealismus.">
+  <meta property="og:locale" content="de_DE">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Digitale Edition deutscher Idealismus">
+  <meta name="twitter:description" content="Kant, Fichte, Schelling, Hegel — frei zugänglich und durchsuchbar.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="theme-color" content="#1a191f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.dataset.theme=localStorage.getItem('idealismus-theme')||''</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Digitale Edition deutscher Idealismus",
+    "description": "Frei zugängliche digitale Editionen der Hauptwerke des deutschen Idealismus: Kant, Fichte, Schelling, Hegel.",
+    "inLanguage": "de"
+  }
+  </script>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-title">
+    <span class="site-title-eyebrow">Digitale Edition</span>
+    <span class="site-title-main">Deutscher Idealismus</span>
+  </a>
+  <nav class="sitenav">
+    <ul>
+      <li><a href="#editionen">Editionen</a></li>
+      <li><a href="#projekt">Projekt</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()" title="Darstellung wechseln" aria-label="Farbschema wechseln"></button></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Kant &middot; Fichte &middot; Schelling &middot; Hegel</div>
+    <h1 class="hero-title">Digitale Edition<br>deutscher Idealismus</h1>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">
+      Frei zug&auml;ngliche, durchsuchbare Digitalausgaben der Hauptwerke
+      des deutschen Idealismus &mdash; texttreu digitalisiert in
+      Originalrechtschreibung.
+    </p>
+    <div class="hero-actions">
+      <a href="#editionen" class="hero-btn-primary">Editionen entdecken</a>
+    </div>
+  </div>
+  <div class="hero-scroll" onclick="document.getElementById('editionen').scrollIntoView({behavior:'smooth'})">
+    <span>Entdecken</span>
+    <span class="hero-scroll-line"></span>
+  </div>
+</section>
+
+<section class="editionen-section" id="editionen">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">Werkausgaben</div>
+      <div class="section-title">Die Editionen</div>
+    </div>
+
+    <div class="editions-grid">
+
+      <a href="https://digitaleschellingedition.vercel.app/" class="edition-card" target="_blank" rel="noopener">
+        <div class="edition-status edition-status--live">Verf&uuml;gbar</div>
+        <div class="edition-portrait">
+          <div class="edition-initial">S</div>
+        </div>
+        <div class="edition-body">
+          <h2 class="edition-name">Friedrich Wilhelm Joseph von Schelling</h2>
+          <div class="edition-work">S&auml;mmtliche Werke</div>
+          <div class="edition-meta">14 B&auml;nde &middot; 1856&ndash;1861 &middot; &uuml;ber 4.500 Seiten</div>
+          <p class="edition-desc">
+            Vollst&auml;ndige Digitalausgabe der von K.&nbsp;F.&nbsp;A. Schelling
+            herausgegebenen S&auml;mmtlichen Werke in zwei Abtheilungen:
+            von den Jugendschriften bis zur Philosophie der Offenbarung.
+          </p>
+          <div class="edition-features">
+            <span class="edition-tag">Volltextsuche</span>
+            <span class="edition-tag">14 B&auml;nde</span>
+            <span class="edition-tag">Fu&szlig;noten</span>
+          </div>
+        </div>
+        <div class="edition-arrow">&rarr;</div>
+      </a>
+
+      <a href="https://digitalehegeledition.vercel.app/" class="edition-card" target="_blank" rel="noopener">
+        <div class="edition-status edition-status--live">Verf&uuml;gbar</div>
+        <div class="edition-portrait">
+          <div class="edition-initial">H</div>
+        </div>
+        <div class="edition-body">
+          <h2 class="edition-name">Georg Wilhelm Friedrich Hegel</h2>
+          <div class="edition-work">Gesammelte Werke</div>
+          <div class="edition-meta">Wissenschaft der Logik &middot; 3 B&auml;nde (GW 11, 12, 21)</div>
+          <p class="edition-desc">
+            Digitale Forschungsausgabe der Wissenschaft der Logik nach den
+            Gesammelten Werken: Seinslogik, Wesenslogik und Begriffslogik
+            in Originalrechtschreibung.
+          </p>
+          <div class="edition-features">
+            <span class="edition-tag">Volltextsuche</span>
+            <span class="edition-tag">GW-Seitenkonkordanz</span>
+          </div>
+        </div>
+        <div class="edition-arrow">&rarr;</div>
+      </a>
+
+      <div class="edition-card edition-card--planned">
+        <div class="edition-status edition-status--planned">In Planung</div>
+        <div class="edition-portrait">
+          <div class="edition-initial">K</div>
+        </div>
+        <div class="edition-body">
+          <h2 class="edition-name">Immanuel Kant</h2>
+          <div class="edition-work">Gesammelte Schriften (Akademie-Ausgabe)</div>
+          <div class="edition-meta">Kritiken &middot; vorkritische Schriften &middot; Opus postumum</div>
+          <p class="edition-desc">
+            Geplante Digitalausgabe ausgew&auml;hlter Werke Kants auf Grundlage
+            gemeinfreier Textquellen &mdash; von der Kritik der reinen Vernunft
+            bis zum Opus postumum.
+          </p>
+        </div>
+      </div>
+
+      <div class="edition-card edition-card--planned">
+        <div class="edition-status edition-status--planned">In Planung</div>
+        <div class="edition-portrait">
+          <div class="edition-initial">F</div>
+        </div>
+        <div class="edition-body">
+          <h2 class="edition-name">Johann Gottlieb Fichte</h2>
+          <div class="edition-work">S&auml;mmtliche Werke</div>
+          <div class="edition-meta">8 B&auml;nde &middot; hrsg. von I.&nbsp;H. Fichte &middot; 1845&ndash;1846</div>
+          <p class="edition-desc">
+            Geplante Digitalausgabe der S&auml;mmtlichen Werke Fichtes,
+            herausgegeben von seinem Sohn &mdash; Wissenschaftslehre,
+            Reden an die deutsche Nation, Bestimmung des Menschen.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="about-section" id="projekt">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">Das Projekt</div>
+      <div class="section-title">Deutscher Idealismus &mdash; frei zug&auml;nglich</div>
+    </div>
+    <p class="about-lead">
+      Die Werke des deutschen Idealismus geh&ouml;ren zu den bedeutendsten
+      philosophischen Texten der Neuzeit. Ihre Prim&auml;rtexte sind seit
+      langem gemeinfrei &mdash; eine frei zug&auml;ngliche, durchsuchbare
+      und zitierf&auml;hige Digitalausgabe fehlte bislang.
+    </p>
+    <div class="about-cols">
+      <div class="about-col">
+        <h3>Methode</h3>
+        <p>
+          Jede Edition basiert auf historischen Werkausgaben, deren Texte
+          seitenweise extrahiert, strukturiert und indexiert werden.
+          Abs&auml;tze, &Uuml;berschriften, Fu&szlig;noten und typographische
+          Hervorhebungen werden originalgetreu wiedergegeben.
+        </p>
+      </div>
+      <div class="about-col">
+        <h3>Ziel</h3>
+        <p>
+          Ein offenes, frei zug&auml;ngliches Forschungsportal f&uuml;r die
+          Philosophie des deutschen Idealismus &mdash; durchsuchbar,
+          zitierfähig und in Originalrechtschreibung. Keine
+          Registrierung, keine Paywall.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="timeline-section">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">Chronologie</div>
+      <div class="section-title">Vier Denker, eine Epoche</div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-year">1724&ndash;1804</div>
+        <div class="timeline-name">Kant</div>
+        <div class="timeline-note">K&ouml;nigsberg &middot; Kritische Philosophie</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">1762&ndash;1814</div>
+        <div class="timeline-name">Fichte</div>
+        <div class="timeline-note">Jena &middot; Berlin &middot; Wissenschaftslehre</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">1775&ndash;1854</div>
+        <div class="timeline-name">Schelling</div>
+        <div class="timeline-note">Jena &middot; M&uuml;nchen &middot; Berlin &middot; Naturphilosophie &middot; Sp&auml;tphilosophie</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">1770&ndash;1831</div>
+        <div class="timeline-name">Hegel</div>
+        <div class="timeline-note">Jena &middot; N&uuml;rnberg &middot; Berlin &middot; Absoluter Idealismus</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <h3>Digitale Edition deutscher Idealismus</h3>
+  <p>Forschungsportal &middot; Frei zug&auml;nglich</p>
+  <nav>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+  </nav>
+</footer>
+
+<script>
+function toggleTheme() {
+  var t = document.documentElement.dataset.theme === 'light' ? '' : 'light';
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('idealismus-theme', t);
+}
+</script>
+</body>
+</html>
