@@ -149,39 +149,100 @@ def merge_headings(paragraphs: list[dict]) -> list[dict]:
     return merged
 
 
-def build_toc(pages: list[dict]) -> list[dict]:
+def build_toc(converted_pages: list[dict]) -> list[dict]:
+    """Build TOC from converted pages (which have page_book set)."""
     toc = []
-    for i, p in enumerate(pages):
-        paras = merge_headings(p.get("paragraphs", []))
-        for para in paras:
-            if para["kind"] in ("heading", "subheading"):
-                title = para["text"]
-                if RE_BARE_NUMERAL.match(title):
-                    continue
-                level = para.get("level", 2)
-                if RE_YEAR_END.search(title):
-                    level = 2
-                toc.append({
-                    "title": title,
-                    "page_kik": p.get("page_kik"),
-                    "page_pdf": p.get("page_pdf"),
-                    "level": level,
-                })
+    for p in converted_pages:
+        units = p.get("units", [])
+        merged = merge_heading_units(units)
+        for u in merged:
+            if u.get("type") not in ("heading", "subheading"):
+                continue
+            title = u.get("text", "").strip()
+            if not title or len(title) <= 2:
+                continue
+            if RE_BARE_NUMERAL.match(title):
+                continue
+            level = u.get("level", 2)
+            if RE_YEAR_END.search(title):
+                level = 2
+            toc.append({
+                "title": title,
+                "page_id": p.get("page_id"),
+                "page_pdf": p.get("page_pdf"),
+                "page_book": p.get("page_book"),
+                "level": level,
+            })
     return toc
 
 
-def build_search_entries(pages: list[dict], work_id: str) -> list[dict]:
+def merge_heading_units(units: list[dict]) -> list[dict]:
+    """Merge consecutive heading units (same logic as merge_headings but for units)."""
+    merged = []
+    for u in units:
+        if u.get("type") in ("heading", "subheading"):
+            if RE_DECORATIVE.match(u.get("text", "")):
+                continue
+            u = dict(u)
+            u["text"] = RE_FOOTNOTE_REF.sub("", u.get("text", "")).strip()
+        prev_text = merged[-1].get("text", "") if merged else ""
+        should_merge = (u.get("type") in ("heading", "subheading")
+                        and merged
+                        and merged[-1].get("type") in ("heading", "subheading")
+                        and (not RE_SENTENCE_END.search(prev_text)
+                             or RE_BARE_NUMERAL.match(prev_text)))
+        if should_merge:
+            merged[-1]["text"] += " " + u.get("text", "")
+            merged[-1]["level"] = min(merged[-1].get("level", 2), u.get("level", 2))
+        else:
+            merged.append(dict(u))
+    return merged
+
+
+def split_pages(raw_pages: list[dict]) -> list[dict]:
+    """Split raw pages at page_break markers so each book page is its own entry."""
+    result = []
+    for p in raw_pages:
+        paragraphs = p.get("paragraphs", [])
+        breaks = [(i, paragraphs[i].get("marker", {}))
+                  for i, pa in enumerate(paragraphs) if pa.get("kind") == "page_break"]
+
+        if not breaks:
+            page = dict(p)
+            page["page_id"] = str(p["page_pdf"])
+            result.append(page)
+            continue
+
+        first_break_idx = breaks[0][0]
+        pre_marker = [pa for pa in paragraphs[:first_break_idx]
+                      if pa["kind"] != "page_break"]
+
+        for bi, (brk_idx, marker) in enumerate(breaks):
+            next_brk = breaks[bi + 1][0] if bi + 1 < len(breaks) else len(paragraphs)
+            section_paras = [pa for pa in paragraphs[brk_idx + 1:next_brk]
+                            if pa["kind"] != "page_break"]
+            if bi == 0 and pre_marker:
+                section_paras = pre_marker + section_paras
+
+            page = dict(p)
+            page["page_id"] = f"{p['page_pdf']}_{bi}"
+            page["paragraphs"] = section_paras
+            page["page_markers"] = [marker] if marker else []
+            result.append(page)
+
+    return result
+
+
+def build_search_entries(converted_pages: list[dict], work_id: str) -> list[dict]:
     entries = []
-    for i, p in enumerate(pages):
+    for p in converted_pages:
         if p.get("page_kind") in ("title_page", "blank", "toc"):
             continue
-        text_parts = []
-        for para in p.get("paragraphs", []):
-            text_parts.append(para["text"])
+        text_parts = [u["text"] for u in p.get("units", []) if u.get("text")]
         if not text_parts:
             continue
+        page_id = p.get("page_id", str(p.get("page_pdf", "")))
         full_text = " ".join(text_parts)
-        # Split into chunks of ~300 chars for search granularity
         words = full_text.split()
         chunk = []
         chunk_len = 0
@@ -191,8 +252,8 @@ def build_search_entries(pages: list[dict], work_id: str) -> list[dict]:
             if chunk_len > 300:
                 entries.append({
                     "work_id": work_id,
-                    "page_index": i,
-                    "page_kik": p.get("page_kik"),
+                    "page_id": page_id,
+                    "sigel": p.get("sigel", ""),
                     "text": " ".join(chunk),
                 })
                 chunk = []
@@ -200,8 +261,8 @@ def build_search_entries(pages: list[dict], work_id: str) -> list[dict]:
         if chunk:
             entries.append({
                 "work_id": work_id,
-                "page_index": i,
-                "page_kik": p.get("page_kik"),
+                "page_id": page_id,
+                "sigel": p.get("sigel", ""),
                 "text": " ".join(chunk),
             })
     return entries
@@ -222,8 +283,6 @@ def convert_page(p: dict, citation_prefix: str, citation_systems: list[str]) -> 
         units.append(unit)
 
     markers = p.get("page_markers", [])
-
-    # Derive page_book from AA markers (the first AA page on this page)
     aa_markers = [m for m in markers if m.get("system") == "AA"]
     b_markers = [m for m in markers if m.get("system") == "B"]
     a_markers = [m for m in markers if m.get("system") == "A"]
@@ -232,16 +291,20 @@ def convert_page(p: dict, citation_prefix: str, citation_systems: list[str]) -> 
     if aa_markers:
         page_book = aa_markers[0]["page"]
 
-    # Build sigel: "AA IV, 393" for AA works, "B 75" for KrV
     sigel = ""
     if "B" in citation_systems and b_markers:
-        sigel = " · ".join(m["ref"] for m in b_markers)
+        ref = b_markers[0]["ref"]
+        sigel = ref[0] + " " + ref[1:] if len(ref) > 1 else ref
     elif "A" in citation_systems and a_markers:
-        sigel = " · ".join(m["ref"] for m in a_markers)
+        ref = a_markers[0]["ref"]
+        sigel = ref[0] + " " + ref[1:] if len(ref) > 1 else ref
     elif "AA" in citation_systems and page_book is not None:
         sigel = f"{citation_prefix}, {page_book}"
 
+    page_id = p.get("page_id", str(p["page_pdf"]))
+
     page_out = {
+        "page_id": page_id,
         "page_pdf": p["page_pdf"],
         "page_book": page_book,
         "page_kind": p["page_kind"],
@@ -262,6 +325,7 @@ def assign_page_books(pages: list[dict], citation_prefix: str,
                       citation_systems: list[str]) -> list[dict]:
     """Fill in page_book and sigel for pages that lack markers."""
     last_aa = None
+    last_sigel = ""
     for p in pages:
         if p["page_book"] is not None:
             last_aa = p["page_book"]
@@ -269,24 +333,29 @@ def assign_page_books(pages: list[dict], citation_prefix: str,
             p["page_book"] = last_aa
         if "AA" in citation_systems and p["page_book"] is not None and not p["sigel"]:
             p["sigel"] = f"{citation_prefix}, {p['page_book']}"
+        if p["sigel"]:
+            last_sigel = p["sigel"]
+        elif last_sigel and p["page_kind"] == "body":
+            p["sigel"] = last_sigel
     return pages
 
 
 def build_work_data(vol: dict, pages: list[dict]) -> dict:
-    toc = build_toc(pages)
     citation_prefix = vol.get("citation_prefix", vol["siglum"])
     citation_systems = vol.get("citation_systems", [])
-    converted = [convert_page(p, citation_prefix, citation_systems) for p in pages]
+    split = split_pages(pages)
+    converted = [convert_page(p, citation_prefix, citation_systems) for p in split]
     converted = assign_page_books(converted, citation_prefix, citation_systems)
+    toc = build_toc(converted)
 
     stats = {
-        "pages_total": len(pages),
-        "pages_body": sum(1 for p in pages if p["page_kind"] == "body"),
-        "headings": sum(1 for p in pages for pa in p.get("paragraphs", []) if pa["kind"] in ("heading", "subheading")),
-        "paragraphs": sum(1 for p in pages for pa in p.get("paragraphs", []) if pa["kind"] == "paragraph"),
+        "pages_total": len(converted),
+        "pages_body": sum(1 for p in converted if p["page_kind"] == "body"),
+        "headings": sum(1 for p in converted for u in p.get("units", []) if u.get("type") in ("heading", "subheading")),
+        "paragraphs": sum(1 for p in converted for u in p.get("units", []) if u.get("type") == "paragraph"),
     }
 
-    total_markers = sum(len(p.get("page_markers", [])) for p in pages)
+    total_markers = sum(len(p.get("markers", [])) for p in converted)
     stats["page_markers"] = total_markers
 
     return {
@@ -321,7 +390,7 @@ def main():
         print(f"Building {vol['work_id']}: {len(pages)} pages")
 
         work_data = build_work_data(vol, pages)
-        search_entries = build_search_entries(pages, vol["work_id"])
+        search_entries = build_search_entries(work_data["pages"], vol["work_id"])
         all_search.extend(search_entries)
 
         # Write work-*.js
@@ -331,12 +400,13 @@ def main():
         print(f"  -> {work_file.name} ({work_file.stat().st_size / 1024:.0f} KB)")
 
         # Collect stats for edition-data
+        wd_stats = work_data.get("_stats", {})
         stats = work_data["metadata"].copy()
         stats["stats"] = {
-            "pages_total": len(pages),
-            "pages_body": sum(1 for p in pages if p["page_kind"] == "body"),
-            "headings": sum(1 for p in pages for pa in p.get("paragraphs", []) if pa["kind"] in ("heading", "subheading")),
-            "paragraphs": sum(1 for p in pages for pa in p.get("paragraphs", []) if pa["kind"] == "paragraph"),
+            "pages_total": len(work_data["pages"]),
+            "pages_body": sum(1 for p in work_data["pages"] if p["page_kind"] == "body"),
+            "headings": sum(1 for p in work_data["pages"] for u in p.get("units", []) if u.get("type") in ("heading", "subheading")),
+            "paragraphs": sum(1 for p in work_data["pages"] for u in p.get("units", []) if u.get("type") == "paragraph"),
             "search_entries": len(search_entries),
         }
         all_works_meta.append(stats)

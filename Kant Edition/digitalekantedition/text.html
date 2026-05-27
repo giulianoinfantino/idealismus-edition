@@ -138,7 +138,7 @@
         if (m.system === 'B' || m.system === 'A') {
           var key = m.ref.toUpperCase().replace(/\s+/g, '');
           if (!(key in state._markerMap)) {
-            state._markerMap[key] = { pageIdx: idx, pagePdf: p.page_pdf };
+            state._markerMap[key] = { pageIdx: idx, pageId: p.page_id || p.page_pdf };
           }
         }
       });
@@ -197,18 +197,17 @@
 
     renderPages();
 
-    // TOC
-    const bookToPdf = {};
-    (corpus.pages || []).forEach(p => {
-      if (p.page_book != null) bookToPdf[p.page_book] = p.page_pdf;
-    });
-
+    // TOC — link entries to actual heading anchors via findBestAnchor
     const tocEntries = (corpus.toc_printed || []).filter(e => e.title && e.title.trim().length > 2);
-    document.getElementById('toc-list').innerHTML = tocEntries.map(e => {
+    document.getElementById('toc-list').innerHTML = tocEntries.map((e, i) => {
       const lvl = e.level || 2;
-      const href = e.page_pdf != null ? `page-${e.page_pdf}` : null;
-      if (href) {
-        return `<li data-level="${lvl}"><a href="#${href}">${e.title}</a></li>`;
+      const pid = e.page_id || e.page_pdf;
+      const ha = pid != null ? findBestAnchor(e.title, pid) : null;
+      if (ha) {
+        return `<li data-level="${lvl}"><a href="#${ha}">${e.title}</a></li>`;
+      }
+      if (pid != null) {
+        return `<li data-level="${lvl}"><a href="#page-${pid}">${e.title}</a></li>`;
       }
       return `<li data-level="${lvl}"><span class="toc-divider">${e.title}</span></li>`;
     }).join('');
@@ -230,20 +229,124 @@
     return s;
   }
 
+  // --- Heading merge / cleanup (client-side, like Hegel's prepareUnits) ---
+  const H_STRUCT = /^(ERST|ZWEIT|DRITT|VIERT|FÜNFT|SECHST|SIEBT|ACHT|NEUNT|ZEHNT|ELFT|ZWÖLFT|I{1,3}V?|IV|VI{0,3}|IX|X{1,3})[.\s]/i;
+  const H_BARE = /^(I{1,3}V?|IV|VI{0,3}|IX|X{0,3}|[A-Z]|\d+)[.):]?\s*$/;
+  const H_NOISE = new Set(['', 'INHALT', 'INHALTSVERZEICHNIS', 'REGISTER']);
+  const H_DECO = /^[—–\-_=\s]+$/;
+
+  function prepareUnits(raw) {
+    var units = [];
+    for (var k = 0; k < raw.length; k++) {
+      var r = raw[k];
+      if (r.type === 'spacer' || (r.type === 'paragraph' && !(r.text || '').trim())) {
+        var prev = units.length ? units[units.length - 1] : null;
+        var nextH = k + 1;
+        while (nextH < raw.length && (raw[nextH].type === 'spacer' || (raw[nextH].type === 'paragraph' && !(raw[nextH].text || '').trim()))) nextH++;
+        if (prev && prev.type === 'heading' && nextH < raw.length && raw[nextH].type === 'heading') continue;
+      }
+      units.push(r);
+    }
+
+    var out = [];
+    var i = 0;
+    while (i < units.length) {
+      var u = units[i];
+      if (u.type !== 'heading') { out.push(u); i++; continue; }
+      var word = (u.text || '').replace(/[.\s]+$/g, '').trim();
+      var upper = word.toUpperCase();
+      if (H_NOISE.has(upper) || H_DECO.test(word)) { i++; continue; }
+
+      // Bare numeral/letter prefix — merge with next heading
+      if (H_BARE.test(word) && i + 1 < units.length && units[i+1].type === 'heading') {
+        var prefix = word.replace(/[.):]$/, '').trim();
+        var next = units[i+1];
+        var nw = (next.text || '').replace(/[.\s]+$/g, '').trim().toUpperCase();
+        if (!H_NOISE.has(nw) && !H_DECO.test(next.text || '')) {
+          out.push({type: 'heading', text: prefix + '. ' + next.text, level: u.level || next.level || 2});
+          i += 2; continue;
+        }
+      }
+
+      // Structural heading (Erster Theil, Zweiter Abschnitt...) — merge with following title
+      if (H_STRUCT.test(upper) && i + 1 < units.length && units[i+1].type === 'heading') {
+        var parts = [u.text];
+        var j = i + 1;
+        while (j < units.length && units[j].type === 'heading') {
+          var jw = (units[j].text || '').replace(/[.\s]+$/g, '').trim().toUpperCase();
+          if (H_NOISE.has(jw) || H_DECO.test(units[j].text || '')) { j++; continue; }
+          if (H_STRUCT.test(jw) || H_BARE.test(units[j].text || '')) break;
+          parts.push(units[j].text);
+          j++; break;
+        }
+        var merged = parts.join(' ');
+        out.push({type: 'heading', text: merged, level: 1});
+        i = j; continue;
+      }
+
+      out.push(u); i++;
+    }
+    return out;
+  }
+
+  // --- Heading anchor matching for TOC links ---
+  function titleMatch(a, b) {
+    if (!a || !b) return false;
+    return a.includes(b) || b.includes(a);
+  }
+
+  function findBestAnchor(title, pageId) {
+    var norm = title.toUpperCase().replace(/[.\s()\d]+$/g, '').replace(/\s+/g, ' ').trim();
+    var words = norm.split(/\s+/).filter(function(w) { return w.length > 2; });
+    var hds = state._pageHeadings && state._pageHeadings[pageId];
+    if (hds) {
+      for (var k = 0; k < hds.length; k++) { if (titleMatch(norm, hds[k].text)) return hds[k].hid; }
+      if (words.length) {
+        for (var k = 0; k < hds.length; k++) {
+          if (words.every(function(w) { return hds[k].text.indexOf(w) !== -1; })) return hds[k].hid;
+        }
+      }
+    }
+    // Search nearby page IDs
+    var allIds = Object.keys(state._pageHeadings || {});
+    var idx = allIds.indexOf(String(pageId));
+    if (idx >= 0) {
+      for (var d = 1; d <= 5; d++) {
+        for (var s = 0; s < 2; s++) {
+          var ni = idx + (s === 0 ? d : -d);
+          if (ni < 0 || ni >= allIds.length) continue;
+          var nearby = state._pageHeadings[allIds[ni]];
+          if (!nearby) continue;
+          for (var k = 0; k < nearby.length; k++) { if (titleMatch(norm, nearby[k].text)) return nearby[k].hid; }
+          if (words.length) {
+            for (var k = 0; k < nearby.length; k++) {
+              if (words.every(function(w) { return nearby[k].text.indexOf(w) !== -1; })) return nearby[k].hid;
+            }
+          }
+        }
+      }
+    }
+    if (hds && hds.length) return hds[0].hid;
+    return null;
+  }
+
   function renderPageContent(page) {
-    const units = page.units || [];
+    const units = prepareUnits(page.units || []);
     if (!units.length) return '';
+    const pid = page.page_id || page.page_pdf;
     let hIdx = 0;
     return units.map(u => {
       const type = u.type || 'paragraph';
       let headingIdAttr = '';
       if (type === 'heading' || type === 'subheading') {
-        const hid = `hd-${page.page_pdf}-${hIdx}`;
+        const hid = `hd-${pid}-${hIdx}`;
         headingIdAttr = ` id="${hid}"`;
-        if (hIdx === 0 && page.page_book != null && !(page.page_book in state.headingAnchors)) {
-          state.headingAnchors[page.page_book] = hid;
-        }
         hIdx++;
+      }
+      if (type === 'heading') {
+        const lvl = u.level || 2;
+        const tag = lvl <= 1 ? 'h2' : lvl <= 2 ? 'h3' : 'h4';
+        return `<${tag} class="text-unit type-heading" data-level="${lvl}"${headingIdAttr}>${renderInline(u.text)}</${tag}>`;
       }
       const level = u.level || '';
       return `<div class="text-unit type-${type}" data-level="${level}"${headingIdAttr}>${renderInline(u.text)}</div>`;
@@ -252,34 +355,44 @@
 
   function renderPages() {
     state.headingAnchors = {};
+    state._pageHeadings = {};
     state.bodyPages = (state.corpus.pages || [])
-      .filter(p => p.page_kind === 'body' || p.page_kind === 'frontmatter');
+      .filter(p => p.page_kind === 'body' || p.page_kind === 'frontmatter' || p.page_kind === 'title_page');
 
+    // Pre-compute heading anchors and page heading map for findBestAnchor
     state.bodyPages.forEach(page => {
+      const pid = page.page_id || page.page_pdf;
+      const units = prepareUnits(page.units || []);
       let hIdx = 0;
-      (page.units || []).forEach(u => {
+      const pageHds = [];
+      units.forEach(u => {
         if (u.type === 'heading' || u.type === 'subheading') {
-          const hid = `hd-${page.page_pdf}-${hIdx}`;
+          const hid = `hd-${pid}-${hIdx}`;
+          pageHds.push({ hid: hid, text: (u.text || '').toUpperCase().replace(/[.\s()\d]+$/g, '').replace(/\s+/g, ' ').trim() });
           if (hIdx === 0 && page.page_book != null && !(page.page_book in state.headingAnchors)) {
             state.headingAnchors[page.page_book] = hid;
           }
           hIdx++;
         }
       });
+      if (pageHds.length) {
+        state._pageHeadings[pid] = pageHds;
+      }
     });
 
     const container = document.getElementById('reader-pages');
     const frag = document.createDocumentFragment();
     state.bodyPages.forEach(page => {
+      const pid = page.page_id || page.page_pdf;
       const divider = document.createElement('div');
       divider.className = 'page-divider';
-      divider.id = `page-${page.page_pdf}`;
+      divider.id = `page-${pid}`;
       divider.innerHTML = `<span class="page-sigel">${page.sigel || ''}</span>`;
       frag.appendChild(divider);
 
       const card = document.createElement('article');
       card.className = 'page-card';
-      card.dataset.pagePdf = page.page_pdf;
+      card.dataset.pageId = pid;
       card.style.minHeight = '12rem';
       card.innerHTML = '<div class="page-body"></div>';
       frag.appendChild(card);
@@ -287,7 +400,7 @@
     container.appendChild(frag);
 
     const pageMap = {};
-    state.bodyPages.forEach(p => { pageMap[p.page_pdf] = p; });
+    state.bodyPages.forEach(p => { pageMap[p.page_id || p.page_pdf] = p; });
 
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -295,7 +408,7 @@
         const card = entry.target;
         if (card.dataset.rendered) return;
         card.dataset.rendered = '1';
-        const page = pageMap[card.dataset.pagePdf];
+        const page = pageMap[card.dataset.pageId];
         if (page) {
           card.querySelector('.page-body').innerHTML = renderPageContent(page);
           card.style.minHeight = '';
@@ -311,20 +424,20 @@
   function ensureRendered(hash) {
     if (!hash) return;
     const id = hash.replace(/^#/, '');
-    const m = id.match(/^(?:page|hd)-(\d+)/);
+    const m = id.match(/^(?:page|hd)-(.+?)(?:-\d+)?$/);
     if (!m) return;
-    const pagePdf = m[1];
+    const pageId = m[1];
     const pageMap = {};
-    (state.bodyPages || []).forEach(p => { pageMap[p.page_pdf] = p; });
+    (state.bodyPages || []).forEach(p => { pageMap[p.page_id || p.page_pdf] = p; });
     const allCards = Array.from(document.querySelectorAll('.page-card'));
-    const idx = allCards.findIndex(c => c.dataset.pagePdf === pagePdf);
+    const idx = allCards.findIndex(c => c.dataset.pageId === pageId);
     if (idx < 0) return;
     const start = Math.max(0, idx - 3);
     const end = Math.min(allCards.length, idx + 4);
     for (let i = start; i < end; i++) {
       const card = allCards[i];
       if (card.dataset.rendered) continue;
-      const page = pageMap[card.dataset.pagePdf];
+      const page = pageMap[card.dataset.pageId];
       if (page) {
         card.querySelector('.page-body').innerHTML = renderPageContent(page);
         card.dataset.rendered = '1';
@@ -358,10 +471,10 @@
     if (!raw) return;
     var entry = state._markerMap && state._markerMap[raw];
     if (entry) {
-      var hash = '#page-' + entry.pagePdf;
+      var hash = '#page-' + entry.pageId;
       ensureRendered(hash);
       requestAnimationFrame(function() {
-        var el = document.getElementById('page-' + entry.pagePdf);
+        var el = document.getElementById('page-' + entry.pageId);
         if (el) scrollAndSettle(el, hash);
       });
     } else {
@@ -376,10 +489,11 @@
     if (isNaN(num)) return;
     var page = state.corpus?.pages.find(function(p) { return p.page_book === num; });
     if (page) {
-      var hash = '#page-' + page.page_pdf;
+      var pid = page.page_id || page.page_pdf;
+      var hash = '#page-' + pid;
       ensureRendered(hash);
       requestAnimationFrame(function() {
-        var el = document.getElementById('page-' + page.page_pdf);
+        var el = document.getElementById('page-' + pid);
         if (el) scrollAndSettle(el, hash);
       });
     } else {
@@ -552,7 +666,7 @@
     state.bodyPages.forEach(function(p) {
       var fullText = (p.units || []).map(function(u) { return u.text || ''; }).join(' ');
       if (textMatchesTerms(fullText, searchTerms)) {
-        searchHitPages.push(p.page_pdf);
+        searchHitPages.push(p.page_id || p.page_pdf);
       }
     });
 
@@ -567,12 +681,12 @@
   function inlineSearchGoTo(idx) {
     if (!searchHitPages.length) return;
     searchHitIdx = idx;
-    var pagePdf = searchHitPages[idx];
-    var hash = '#page-' + pagePdf;
+    var pageId = searchHitPages[idx];
+    var hash = '#page-' + pageId;
     ensureRendered(hash);
     requestAnimationFrame(function() {
       setTimeout(function() {
-        var card = document.querySelector('.page-card[data-page-pdf="' + pagePdf + '"]');
+        var card = document.querySelector('.page-card[data-page-id="' + pageId + '"]');
         if (!card) return;
         clearSearchMarks();
         highlightTermsInCard(card, searchTerms);
@@ -794,7 +908,7 @@
       }
       if (!topCard) topCard = cards[cards.length - 1];
       var workId = new URLSearchParams(window.location.search).get('work') || 'aa-III';
-      try { localStorage.setItem(KEY, JSON.stringify({ work: workId, page: topCard.dataset.pagePdf, ts: Date.now() })); } catch (_) {}
+      try { localStorage.setItem(KEY, JSON.stringify({ work: workId, page: topCard.dataset.pageId, ts: Date.now() })); } catch (_) {}
     }
     window.addEventListener('scroll', function() {
       clearTimeout(saveTimer); saveTimer = setTimeout(savePosition, 800);

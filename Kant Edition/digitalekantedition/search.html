@@ -256,10 +256,10 @@
         var w = window.KANT_EDITION.works.find(function(w) { return w.work_id === r.work_id; });
         if (w) workLabel = w.siglum;
       }
-      var pageLabel = r.page_kik ? 'KiK ' + r.page_kik : '';
+      var pageLabel = r.sigel || '';
       return '<a class="search-result-card" href="text.html?work=' + r.work_id +
         '&q=' + encodeURIComponent(raw) +
-        '#page-' + (r.page_index != null ? r.page_index : '') + '">' +
+        '#page-' + (r.page_id || '') + '">' +
         '<div class="search-result-meta">' + workLabel + (pageLabel ? ' · ' + pageLabel : '') + '</div>' +
         '<div class="search-result-text">' + highlighted + '</div>' +
         '</a>';

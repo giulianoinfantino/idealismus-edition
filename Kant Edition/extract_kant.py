@@ -328,17 +328,26 @@ def extract_page(doc: fitz.Document, pdf_page: int) -> dict:
         if line_type == "marker":
             bm = RE_B_PAGE.match(full_text)
             if bm:
-                page_markers.append({"system": "B", "ref": bm.group(1).replace(" ", "")})
+                marker = {"system": "B", "ref": bm.group(1).replace(" ", "")}
+                page_markers.append(marker)
+                flush()
+                paragraphs.append({"kind": "page_break", "text": "", "marker": marker})
                 continue
             am = RE_A_PAGE.match(full_text)
             if am:
-                page_markers.append({"system": "A", "ref": am.group(1).replace(" ", "")})
+                marker = {"system": "A", "ref": am.group(1).replace(" ", "")}
+                page_markers.append(marker)
+                flush()
+                paragraphs.append({"kind": "page_break", "text": "", "marker": marker})
                 continue
             aam = RE_AA_PAGE.match(full_text)
             if aam:
                 band = aam.group(1)
                 page_num = int(aam.group(2))
-                page_markers.append({"system": "AA", "band": band, "page": page_num, "ref": f"{band}{page_num}"})
+                marker = {"system": "AA", "band": band, "page": page_num, "ref": f"{band}{page_num}"}
+                page_markers.append(marker)
+                flush()
+                paragraphs.append({"kind": "page_break", "text": "", "marker": marker})
                 continue
 
         # Check for Worm editorial notes
