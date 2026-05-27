@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Datenschutz &mdash; Digitale Kant-Edition</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>document.documentElement.dataset.theme=localStorage.getItem('kant-theme')||''</script>
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="site-title">
+    <span class="site-title-eyebrow">Digitale Edition</span>
+    <span class="site-title-main">Kant &middot; Werke</span>
+  </a>
+  <nav class="sitenav">
+    <ul>
+      <li><a href="index.html">Sammlung</a></li>
+      <li><a href="text.html">Lekt&uuml;re</a></li>
+      <li><a href="search.html">Recherche</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()" title="Darstellung wechseln">&#9682;</button></li>
+    </ul>
+  </nav>
+</header>
+<main class="blog-main" style="max-width:42rem; margin:0 auto; padding:2rem 1rem;">
+  <h1>Datenschutz</h1>
+  <p>Diese Website wird auf Vercel gehostet. Es werden keine personenbezogenen Daten
+  erhoben, gespeichert oder an Dritte weitergegeben.</p>
+  <p>Die Volltextsuche und Textdarstellung erfolgen vollst&auml;ndig im Browser.
+  Es werden keine Anfragen an externe Suchserver gesendet.</p>
+  <p>Google Fonts werden &uuml;ber <code>fonts.googleapis.com</code> geladen.
+  Details zur Datenverarbeitung durch Google finden Sie in deren
+  Datenschutzerkl&auml;rung.</p>
+</main>
+<footer class="site-footer">
+  <div>Digitale Kant-Edition</div>
+  <nav>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+  </nav>
+</footer>
+<script>
+function toggleTheme() {
+  var t = document.documentElement.dataset.theme === 'light' ? '' : 'light';
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('kant-theme', t);
+}
+</script>
+</body>
+</html>

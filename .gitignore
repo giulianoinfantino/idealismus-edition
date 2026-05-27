@@ -1,0 +1,18 @@
+.vercel
+.DS_Store
+__pycache__/
+
+# Separate repos (have their own git remotes)
+Hegel Edition/
+Schelling Edition/
+hegel-blog/
+kant-blog/
+schelling-blog/
+
+# Source PDFs and OCR intermediates (too large for git)
+*/GW/
+*/SW/
+*/ocr/
+*/out/
+*/toc/
+*/collection_sources/

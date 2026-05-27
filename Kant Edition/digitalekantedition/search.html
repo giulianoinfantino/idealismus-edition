@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recherche &mdash; Kant Digitale Edition</title>
+  <meta name="description" content="Volltextsuche &uuml;ber Kants Werke in der Akademie-Ausgabe &mdash; mit Phrasensuche und Orthographie-Normalisierung.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#232229">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>document.documentElement.dataset.theme=localStorage.getItem('kant-theme')||''</script>
+</head>
+<body class="search-page">
+<a href="#search-input" class="skip-link">Zur Suche springen</a>
+
+<header class="site-header" id="site-header" role="banner">
+  <a href="index.html" class="site-title" aria-label="Digitale Kant-Edition &mdash; Startseite">
+    <span class="site-title-eyebrow">Digitale Edition</span>
+    <span class="site-title-main">Kant &middot; Werke</span>
+  </a>
+  <nav class="sitenav" aria-label="Hauptnavigation">
+    <ul>
+      <li><a href="index.html">Sammlung</a></li>
+      <li><a href="text.html">Lekt&uuml;re</a></li>
+      <li><a href="search.html" class="current" aria-current="page">Recherche</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()" title="Darstellung wechseln" aria-label="Farbschema wechseln"></button></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="search-main" id="search-main">
+  <div class="search-hero-area" id="search-hero-area">
+    <div class="search-hero-content">
+      <div class="search-hero-badge">Akademie-Ausgabe &middot; Volltextsuche</div>
+      <h1 class="search-hero-title">Volltext-Recherche</h1>
+      <div class="search-hero-rule"></div>
+
+      <div class="search-box-elegant">
+        <input type="text" id="search-input" placeholder="Suchanfrage formulieren &hellip;" autofocus
+               onkeydown="if(event.key==='Enter') handleSearch()" aria-label="Suchanfrage eingeben">
+        <button class="btn-search" onclick="handleSearch()" aria-label="Suche starten">Suchen</button>
+      </div>
+
+      <div class="search-controls">
+        <div class="search-filter-row">
+          <select id="filter-work" aria-label="Band filtern"></select>
+          <select id="filter-sort" aria-label="Sortierung">
+            <option value="score">Nach Relevanz</option>
+            <option value="page">Nach Seitenfolge</option>
+          </select>
+        </div>
+        <div class="search-meta-row">
+          <div id="search-status" aria-live="polite">Lade Suchindex &hellip;</div>
+          <a href="#" class="syntax-link" id="syntax-toggle" onclick="event.preventDefault(); document.getElementById('search-guide').classList.toggle('open'); this.classList.toggle('active')">Syntax-Hilfe</a>
+        </div>
+      </div>
+
+      <div class="search-guide" id="search-guide">
+        <dl class="search-guide-list">
+          <div><dt><code>"&hellip;"</code></dt><dd>Exakte Phrase</dd></div>
+          <div><dt><code>AND</code></dt><dd>Beide Terme</dd></div>
+          <div><dt><code>OR</code></dt><dd>Mindestens einer</dd></div>
+          <div><dt><code>NOT</code></dt><dd>Term ausschlie&szlig;en</dd></div>
+          <div><dt><code>wort*</code></dt><dd>Pr&auml;fix-Suche</dd></div>
+          <div><dt><code>Sein &rarr; Seyn</code></dt><dd>Alte Orthographie automatisch</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div id="search-results"></div>
+</div>
+
+<footer class="site-footer" id="search-footer">
+  <div>Digitale Kant-Edition &middot; Forschungsportal</div>
+  <nav>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+  </nav>
+</footer>
+
+<script src="assets/edition-data.js"></script>
+<script src="assets/search-data.js" defer></script>
+<script>
+  var ORTHO_MAP = [
+    [/ey/g, 'ei'], [/ay/g, 'ai'],
+    [/ß/g, 'ss'],
+    [/th(?=[aeiouäöü])/g, 't'],
+    [/ct/g, 'kt'],
+    [/ph/g, 'f'],
+    [/iren\b/g, 'ieren'],
+  ];
+  function normalizeOrtho(s) {
+    var r = s;
+    for (var i = 0; i < ORTHO_MAP.length; i++) r = r.replace(ORTHO_MAP[i][0], ORTHO_MAP[i][1]);
+    return r;
+  }
+
+  function evaluateQuery(text, rawQuery) {
+    var q = rawQuery.trim();
+    if (!q) return false;
+    var orParts = splitOutsideQuotes(q, / OR /i);
+    if (orParts.length > 1) return orParts.some(function(p) { return evaluateQuery(text, p); });
+    var andParts = splitOutsideQuotes(q, / AND /i);
+    if (andParts.length > 1) return andParts.every(function(p) { return evaluateQuery(text, p); });
+    if (/^NOT\s+/i.test(q)) return !evaluateQuery(text, q.replace(/^NOT\s+/i, ''));
+    if (q.startsWith('"') && q.endsWith('"')) {
+      var phrase = q.slice(1, -1).toLowerCase();
+      return text.includes(phrase) || normalizeOrtho(text).includes(normalizeOrtho(phrase));
+    }
+    if (q.endsWith('*')) {
+      var prefix = q.slice(0, -1);
+      var nPrefix = normalizeOrtho(prefix);
+      return text.split(/\s+/).some(function(w) { return w.startsWith(prefix) || normalizeOrtho(w).startsWith(nPrefix); });
+    }
+    var terms = q.split(/\s+/).filter(Boolean);
+    if (terms.length > 1) return terms.every(function(t) { return evaluateQuery(text, t); });
+    return text.includes(q) || normalizeOrtho(text).includes(normalizeOrtho(q));
+  }
+
+  function splitOutsideQuotes(s, sep) {
+    var parts = [], cur = '', inQ = false;
+    for (var i = 0; i < s.length; i++) {
+      if (s[i] === '"') { inQ = !inQ; cur += s[i]; continue; }
+      if (!inQ) {
+        var m = s.slice(i).match(sep);
+        if (m && m.index === 0) { parts.push(cur); cur = ''; i += m[0].length - 1; continue; }
+      }
+      cur += s[i];
+    }
+    if (cur) parts.push(cur);
+    return parts;
+  }
+
+  function extractHighlightTerms(q) {
+    var stripped = q.replace(/\bAND\b|\bOR\b|\bNOT\b/gi, ' ');
+    var terms = [], re = /"([^"]+)"|([^\s"]+)/g, m;
+    while ((m = re.exec(stripped)) !== null) {
+      var t = (m[1] || m[2] || '').trim().toLowerCase();
+      if (t) terms.push(t);
+    }
+    var unique = [];
+    for (var i = 0; i < terms.length; i++) {
+      if (unique.indexOf(terms[i]) === -1) unique.push(terms[i]);
+    }
+    return unique;
+  }
+
+  function highlightText(text, terms) {
+    if (!terms.length) return text;
+    var cleaned = terms.map(function(t) { return t.replace(/\*$/, '').replace(/^"|"$/g, ''); });
+    var pattern = cleaned.filter(Boolean).map(function(t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+    if (!pattern) return text;
+    return text.replace(new RegExp('(' + pattern + ')', 'gi'), '<mark>$1</mark>');
+  }
+
+  function extractSnippet(text, terms, ctx) {
+    ctx = ctx || 80;
+    if (!terms.length) return text.length > 300 ? text.slice(0, 300) + '…' : text;
+    var lower = text.toLowerCase();
+    var cleaned = terms.map(function(t) { return t.replace(/\*$/, '').replace(/^"|"$/g, '').toLowerCase(); }).filter(Boolean);
+    if (!cleaned.length) return text.length > 300 ? text.slice(0, 300) + '…' : text;
+    var firstIdx = -1;
+    for (var i = 0; i < cleaned.length; i++) {
+      var idx = lower.indexOf(cleaned[i]);
+      if (idx !== -1 && (firstIdx === -1 || idx < firstIdx)) firstIdx = idx;
+    }
+    if (firstIdx === -1) return text.length > 300 ? text.slice(0, 300) + '…' : text;
+    var start = Math.max(0, firstIdx - ctx);
+    var end = Math.min(text.length, firstIdx + ctx + 40);
+    var snippet = text.slice(start, end).trim();
+    if (start > 0) snippet = '[…] ' + snippet;
+    if (end < text.length) snippet = snippet + ' […]';
+    return snippet;
+  }
+
+  // Init
+  var searchIndex = null;
+  function initSearch() {
+    if (!window.KANT_SEARCH_DATA) {
+      setTimeout(initSearch, 200);
+      return;
+    }
+    searchIndex = window.KANT_SEARCH_DATA;
+    var n = searchIndex.length;
+    document.getElementById('search-status').textContent =
+      n.toLocaleString('de') + ' indexierte Einträge · Bereit für Abfrage';
+
+    // Populate work filter
+    var opts = '<option value="all">Alle Bände</option>';
+    if (window.KANT_EDITION) {
+      window.KANT_EDITION.works.forEach(function(w) {
+        opts += '<option value="' + w.work_id + '">' + w.siglum + ' — ' + w.short_title + '</option>';
+      });
+    }
+    document.getElementById('filter-work').innerHTML = opts;
+
+    // Auto-search from URL
+    var urlQ = new URLSearchParams(window.location.search).get('q');
+    if (urlQ) {
+      document.getElementById('search-input').value = urlQ;
+      handleSearch();
+    }
+  }
+  setTimeout(initSearch, 100);
+
+  function handleSearch() {
+    var main = document.getElementById('search-main');
+    document.getElementById('search-guide').classList.remove('open');
+    var syntaxToggle = document.getElementById('syntax-toggle');
+    if (syntaxToggle) syntaxToggle.classList.remove('active');
+    main.classList.add('has-results');
+
+    var raw = document.getElementById('search-input').value.trim();
+    var workFilter = document.getElementById('filter-work').value;
+    var sort = document.getElementById('filter-sort').value;
+    var status = document.getElementById('search-status');
+    var container = document.getElementById('search-results');
+
+    if (!searchIndex) {
+      status.textContent = 'Suchindex nicht geladen.';
+      return;
+    }
+    if (!raw) {
+      container.innerHTML = '';
+      main.classList.remove('has-results');
+      status.textContent = searchIndex.length.toLocaleString('de') + ' indexierte Einträge · Bereit für Abfrage';
+      return;
+    }
+
+    var query = raw.toLowerCase();
+    var terms = extractHighlightTerms(query);
+
+    var results = searchIndex.filter(function(entry) {
+      var text = (entry.text || '').toLowerCase();
+      var matchWork = workFilter === 'all' || entry.work_id === workFilter;
+      if (!matchWork) return false;
+      return evaluateQuery(text, query);
+    });
+
+    if (sort === 'page') results.sort(function(a, b) { return (a.page_kik || 0) - (b.page_kik || 0); });
+
+    status.textContent = results.length.toLocaleString('de') + ' Treffer';
+
+    var MAX = 200;
+    var shown = results.slice(0, MAX);
+    var html = shown.map(function(r) {
+      var snippet = extractSnippet(r.text, terms);
+      var highlighted = highlightText(snippet, terms);
+      var workLabel = r.work_id;
+      if (window.KANT_EDITION) {
+        var w = window.KANT_EDITION.works.find(function(w) { return w.work_id === r.work_id; });
+        if (w) workLabel = w.siglum;
+      }
+      var pageLabel = r.page_kik ? 'KiK ' + r.page_kik : '';
+      return '<a class="search-result-card" href="text.html?work=' + r.work_id +
+        '&q=' + encodeURIComponent(raw) +
+        '#page-' + (r.page_index != null ? r.page_index : '') + '">' +
+        '<div class="search-result-meta">' + workLabel + (pageLabel ? ' · ' + pageLabel : '') + '</div>' +
+        '<div class="search-result-text">' + highlighted + '</div>' +
+        '</a>';
+    }).join('');
+
+    if (results.length > MAX) {
+      html += '<div class="search-result-more">Weitere ' + (results.length - MAX) + ' Treffer nicht angezeigt</div>';
+    }
+    container.innerHTML = html || '<div class="search-no-results">Keine Treffer für „' + raw + '"</div>';
+
+    // Update URL
+    var url = new URL(window.location);
+    url.searchParams.set('q', raw);
+    history.replaceState(null, '', url);
+  }
+
+  function toggleTheme() {
+    var t = document.documentElement.dataset.theme === 'light' ? '' : 'light';
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('kant-theme', t);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lekt&uuml;re &mdash; Kant Digitale Edition</title>
+  <meta name="description" content="Lesen Sie Kants Werke in einer durchsuchbaren, strukturierten Digitalausgabe mit Inhaltsverzeichnis und Seitenkonkordanzen.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#232229">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>html { scroll-behavior: auto !important; }</style>
+  <script>document.documentElement.dataset.theme=localStorage.getItem('kant-theme')||''</script>
+</head>
+<body>
+<a href="#reader-pages" class="skip-link">Zum Text springen</a>
+
+<header class="site-header" role="banner">
+  <a href="index.html" class="site-title" aria-label="Digitale Kant-Edition &mdash; Startseite">
+    <span class="site-title-eyebrow">Digitale Edition</span>
+    <span class="site-title-main">Kant &middot; Werke</span>
+  </a>
+  <nav class="sitenav" aria-label="Hauptnavigation">
+    <ul>
+      <li><a href="index.html">Sammlung</a></li>
+      <li><a href="text.html" class="current" aria-current="page">Lekt&uuml;re</a></li>
+      <li><a href="search.html">Recherche</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()" title="Darstellung wechseln" aria-label="Farbschema wechseln"></button></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="reading-progress" id="reading-progress"></div>
+<div class="page-position" id="page-position" aria-live="polite"></div>
+
+<div class="reader-layout" id="main-layout">
+
+  <div class="mobile-backdrop" id="mobile-backdrop" onclick="toggleMobileToc()"></div>
+  <button class="mobile-toc-toggle" id="mobile-toc-toggle" onclick="toggleMobileToc()" title="Inhaltsverzeichnis" aria-label="Inhaltsverzeichnis &ouml;ffnen" aria-expanded="false" aria-controls="reader-sidebar">&#9776;</button>
+  <aside class="reader-sidebar" id="reader-sidebar" role="navigation" aria-label="Inhaltsverzeichnis">
+    <span class="small-caps" style="color:var(--accent-gold); display:block; margin-bottom:1.2rem; font-size:0.68rem; letter-spacing:0.18em;">Inhaltsverzeichnis</span>
+    <ul id="toc-list" class="toc-list" role="list"></ul>
+  </aside>
+
+  <main class="text-content">
+    <div class="reader-sticky-bar" id="reader-sticky-bar">
+      <div id="reader-summary"></div>
+      <div class="reader-toolbar" role="toolbar" aria-label="Leseoptionen">
+      <div class="toolbar-group">
+        <label for="work-selector" class="small-caps">Band</label>
+        <select id="work-selector" onchange="switchWork(this.value)"></select>
+      </div>
+      <div class="toolbar-group" id="toolbar-ba" style="display:none">
+        <label for="jump-b-page" class="small-caps">B/A-Seite</label>
+        <div class="jump-input-group">
+          <input type="text" id="jump-b-page" placeholder="z.B. B75" aria-label="B- oder A-Seitennummer eingeben">
+        </div>
+        <button class="btn-classic" onclick="handleJumpToMarker()" aria-label="Zur Seite springen">&rarr;</button>
+      </div>
+      <div class="toolbar-group" id="toolbar-aa">
+        <label for="jump-aa-page" class="small-caps">AA-Seite</label>
+        <div class="jump-input-group">
+          <input type="text" id="jump-aa-page" placeholder="Nr." aria-label="AA-Seitennummer eingeben">
+        </div>
+        <button class="btn-classic" onclick="handleJumpToAA()" aria-label="Zur Seite springen">&rarr;</button>
+      </div>
+      <div class="toolbar-group toolbar-search">
+        <label for="inline-search" class="small-caps">Suche</label>
+        <div class="inline-search-wrap">
+          <input type="text" id="inline-search" placeholder="Im Text suchen&hellip;" aria-label="Im Text suchen">
+          <span id="inline-search-count" class="inline-search-count" aria-live="polite"></span>
+        </div>
+        <button class="btn-classic" onclick="inlineSearchOrNav(1)" title="Suchen" aria-label="N&auml;chsten Treffer anzeigen">&rarr;</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn-classic btn-font" onclick="adjustFontSize(-1)" title="Kleiner" aria-label="Schrift verkleinern">A&minus;</button>
+        <button class="btn-classic btn-font" onclick="adjustFontSize(1)" title="Gr&ouml;&szlig;er" aria-label="Schrift vergr&ouml;&szlig;ern">A+</button>
+      </div>
+      <div class="toolbar-group toolbar-end">
+        <div class="view-toggle" id="view-toggle">
+          <button data-view="normal" class="active" onclick="setView('normal')">Normal</button>
+          <button data-view="breit" onclick="setView('breit')">Breit</button>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div id="reader-pages"></div>
+  </main>
+
+</div>
+
+<footer class="site-footer">
+  <div>Digitale Kant-Edition &middot; Forschungsportal</div>
+  <nav>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+  </nav>
+</footer>
+
+<script src="assets/edition-data.js"></script>
+<script>
+  const state = { corpus: null, selectedWork: null };
+
+  function scrollToElement(el, smooth) {
+    const header = document.querySelector('.site-header');
+    const sticky = document.getElementById('reader-sticky-bar');
+    const offset = (header ? header.getBoundingClientRect().height : 56)
+                 + (sticky ? sticky.getBoundingClientRect().height : 0) + 16;
+    const y = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: y, behavior: smooth ? 'smooth' : 'instant' });
+  }
+
+  document.getElementById('toc-list').addEventListener('click', function(e) {
+    const link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    e.preventDefault();
+    const hash = link.getAttribute('href');
+    ensureRendered(hash);
+    requestAnimationFrame(() => {
+      const target = document.querySelector(hash);
+      if (target) scrollAndSettle(target, hash);
+    });
+  });
+
+  function hasBA() {
+    var cs = state.corpus?.metadata?.citation_systems || [];
+    return cs.includes('B') || cs.includes('A');
+  }
+
+  function buildMarkerMap() {
+    state._markerMap = {};
+    (state.corpus.pages || []).forEach((p, idx) => {
+      (p.markers || []).forEach(m => {
+        if (m.system === 'B' || m.system === 'A') {
+          var key = m.ref.toUpperCase().replace(/\s+/g, '');
+          if (!(key in state._markerMap)) {
+            state._markerMap[key] = { pageIdx: idx, pagePdf: p.page_pdf };
+          }
+        }
+      });
+    });
+  }
+
+  (function() {
+    const defaultWork = window.KANT_EDITION?.metadata?.default_work_id || 'aa-III';
+    const workId = new URLSearchParams(window.location.search).get('work') || defaultWork;
+    const script = document.createElement('script');
+    script.src = `assets/work-${workId}.js`;
+    script.onload = () => {
+      if (window.KANT_WORK_DATA) {
+        state.corpus = window.KANT_WORK_DATA;
+        state.selectedWork = window.KANT_EDITION?.works.find(w => w.work_id === workId) || null;
+        buildMarkerMap();
+        renderAll();
+        const hash = window.location.hash;
+        const searchQ = new URLSearchParams(window.location.search).get('q');
+        if (hash) ensureRendered(hash);
+        if (searchQ) {
+          requestAnimationFrame(() => setTimeout(() => highlightSearchQuery(searchQ, hash), 100));
+        } else if (hash) {
+          requestAnimationFrame(() => setTimeout(() => {
+            const target = document.querySelector(hash);
+            if (target) scrollToElement(target, false);
+          }, 80));
+        } else if (window._restoreReadingPosition) {
+          requestAnimationFrame(() => setTimeout(window._restoreReadingPosition, 120));
+        }
+      }
+    };
+    document.head.appendChild(script);
+  })();
+
+  function renderAll() {
+    const corpus = state.corpus;
+    const meta = corpus.metadata;
+    const title = state.selectedWork?.title || meta.title;
+    document.title = title + ' — Kant Digitale Edition';
+    document.getElementById('reader-summary').innerHTML = `
+      <h2>${title}</h2>
+      <span class="small-caps" style="color:var(--accent-gold); font-size:0.72rem; letter-spacing:0.18em;">
+        Akademie-Ausgabe · Band ${meta?.band ?? ''}
+      </span>
+    `;
+
+    // Show/hide toolbar sections based on citation system
+    if (hasBA()) {
+      document.getElementById('toolbar-ba').style.display = '';
+      document.getElementById('toolbar-aa').style.display = 'none';
+    } else {
+      document.getElementById('toolbar-ba').style.display = 'none';
+      document.getElementById('toolbar-aa').style.display = '';
+    }
+
+    renderPages();
+
+    // TOC
+    const bookToPdf = {};
+    (corpus.pages || []).forEach(p => {
+      if (p.page_book != null) bookToPdf[p.page_book] = p.page_pdf;
+    });
+
+    const tocEntries = (corpus.toc_printed || []).filter(e => e.title && e.title.trim().length > 2);
+    document.getElementById('toc-list').innerHTML = tocEntries.map(e => {
+      const lvl = e.level || 2;
+      const href = e.page_pdf != null ? `page-${e.page_pdf}` : null;
+      if (href) {
+        return `<li data-level="${lvl}"><a href="#${href}">${e.title}</a></li>`;
+      }
+      return `<li data-level="${lvl}"><span class="toc-divider">${e.title}</span></li>`;
+    }).join('');
+
+    // Work selector
+    if (window.KANT_EDITION) {
+      document.getElementById('work-selector').innerHTML =
+        window.KANT_EDITION.works.map(w =>
+          `<option value="${w.work_id}" ${w.work_id === state.selectedWork?.work_id ? 'selected' : ''}>${w.siglum} — ${w.short_title}</option>`
+        ).join('');
+    }
+  }
+
+  function renderInline(text) {
+    if (!text) return '';
+    var s = String(text);
+    s = s.replace(/\*([^*\n]+?)\*/g, '<em class="sperrsatz">$1</em>');
+    s = s.replace(/_([^_\n]+?)_/g, '<i>$1</i>');
+    return s;
+  }
+
+  function renderPageContent(page) {
+    const units = page.units || [];
+    if (!units.length) return '';
+    let hIdx = 0;
+    return units.map(u => {
+      const type = u.type || 'paragraph';
+      let headingIdAttr = '';
+      if (type === 'heading' || type === 'subheading') {
+        const hid = `hd-${page.page_pdf}-${hIdx}`;
+        headingIdAttr = ` id="${hid}"`;
+        if (hIdx === 0 && page.page_book != null && !(page.page_book in state.headingAnchors)) {
+          state.headingAnchors[page.page_book] = hid;
+        }
+        hIdx++;
+      }
+      const level = u.level || '';
+      return `<div class="text-unit type-${type}" data-level="${level}"${headingIdAttr}>${renderInline(u.text)}</div>`;
+    }).join('');
+  }
+
+  function renderPages() {
+    state.headingAnchors = {};
+    state.bodyPages = (state.corpus.pages || [])
+      .filter(p => p.page_kind === 'body' || p.page_kind === 'frontmatter');
+
+    state.bodyPages.forEach(page => {
+      let hIdx = 0;
+      (page.units || []).forEach(u => {
+        if (u.type === 'heading' || u.type === 'subheading') {
+          const hid = `hd-${page.page_pdf}-${hIdx}`;
+          if (hIdx === 0 && page.page_book != null && !(page.page_book in state.headingAnchors)) {
+            state.headingAnchors[page.page_book] = hid;
+          }
+          hIdx++;
+        }
+      });
+    });
+
+    const container = document.getElementById('reader-pages');
+    const frag = document.createDocumentFragment();
+    state.bodyPages.forEach(page => {
+      const divider = document.createElement('div');
+      divider.className = 'page-divider';
+      divider.id = `page-${page.page_pdf}`;
+      divider.innerHTML = `<span class="page-sigel">${page.sigel || ''}</span>`;
+      frag.appendChild(divider);
+
+      const card = document.createElement('article');
+      card.className = 'page-card';
+      card.dataset.pagePdf = page.page_pdf;
+      card.style.minHeight = '12rem';
+      card.innerHTML = '<div class="page-body"></div>';
+      frag.appendChild(card);
+    });
+    container.appendChild(frag);
+
+    const pageMap = {};
+    state.bodyPages.forEach(p => { pageMap[p.page_pdf] = p; });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const card = entry.target;
+        if (card.dataset.rendered) return;
+        card.dataset.rendered = '1';
+        const page = pageMap[card.dataset.pagePdf];
+        if (page) {
+          card.querySelector('.page-body').innerHTML = renderPageContent(page);
+          card.style.minHeight = '';
+        }
+        observer.unobserve(card);
+      });
+    }, { rootMargin: '600px 0px' });
+
+    container.querySelectorAll('.page-card').forEach(c => observer.observe(c));
+    state._pageObserver = observer;
+  }
+
+  function ensureRendered(hash) {
+    if (!hash) return;
+    const id = hash.replace(/^#/, '');
+    const m = id.match(/^(?:page|hd)-(\d+)/);
+    if (!m) return;
+    const pagePdf = m[1];
+    const pageMap = {};
+    (state.bodyPages || []).forEach(p => { pageMap[p.page_pdf] = p; });
+    const allCards = Array.from(document.querySelectorAll('.page-card'));
+    const idx = allCards.findIndex(c => c.dataset.pagePdf === pagePdf);
+    if (idx < 0) return;
+    const start = Math.max(0, idx - 3);
+    const end = Math.min(allCards.length, idx + 4);
+    for (let i = start; i < end; i++) {
+      const card = allCards[i];
+      if (card.dataset.rendered) continue;
+      const page = pageMap[card.dataset.pagePdf];
+      if (page) {
+        card.querySelector('.page-body').innerHTML = renderPageContent(page);
+        card.dataset.rendered = '1';
+        card.style.minHeight = '';
+        if (state._pageObserver) state._pageObserver.unobserve(card);
+      }
+    }
+  }
+
+  function scrollAndSettle(el, hash) {
+    scrollToElement(el, false);
+    if (hash) history.replaceState(null, '', hash);
+    var tries = 0;
+    var lastY = window.scrollY;
+    function recheck() {
+      scrollToElement(el, false);
+      var nowY = window.scrollY;
+      if (++tries < 5 && Math.abs(nowY - lastY) > 2) {
+        lastY = nowY;
+        requestAnimationFrame(recheck);
+      }
+    }
+    setTimeout(function() { requestAnimationFrame(recheck); }, 60);
+  }
+
+  function switchWork(id) { if (id) window.location.href = `text.html?work=${id}`; }
+
+  // Jump to B/A page marker (KrV only)
+  function handleJumpToMarker() {
+    var raw = document.getElementById('jump-b-page').value.trim().toUpperCase().replace(/\s+/g, '');
+    if (!raw) return;
+    var entry = state._markerMap && state._markerMap[raw];
+    if (entry) {
+      var hash = '#page-' + entry.pagePdf;
+      ensureRendered(hash);
+      requestAnimationFrame(function() {
+        var el = document.getElementById('page-' + entry.pagePdf);
+        if (el) scrollAndSettle(el, hash);
+      });
+    } else {
+      document.getElementById('jump-b-page').style.borderBottomColor = 'var(--accent)';
+      setTimeout(function() { document.getElementById('jump-b-page').style.borderBottomColor = ''; }, 1500);
+    }
+  }
+
+  // Jump to AA page number (all non-KrV works)
+  function handleJumpToAA() {
+    var num = parseInt(document.getElementById('jump-aa-page').value.trim());
+    if (isNaN(num)) return;
+    var page = state.corpus?.pages.find(function(p) { return p.page_book === num; });
+    if (page) {
+      var hash = '#page-' + page.page_pdf;
+      ensureRendered(hash);
+      requestAnimationFrame(function() {
+        var el = document.getElementById('page-' + page.page_pdf);
+        if (el) scrollAndSettle(el, hash);
+      });
+    } else {
+      document.getElementById('jump-aa-page').style.borderBottomColor = 'var(--accent)';
+      setTimeout(function() { document.getElementById('jump-aa-page').style.borderBottomColor = ''; }, 1500);
+    }
+  }
+
+  // Work-aware citation on copy
+  document.addEventListener('copy', function(e) {
+    var sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+    var range = sel.getRangeAt(0);
+    var container = range.commonAncestorContainer.nodeType === 1
+      ? range.commonAncestorContainer
+      : range.commonAncestorContainer.parentElement;
+    if (!container || !container.closest('#reader-pages')) return;
+
+    var pages = [];
+    var dividers = document.querySelectorAll('.page-divider');
+    dividers.forEach(function(div) {
+      var card = div.nextElementSibling;
+      if (!card || !sel.containsNode(card, true)) return;
+      var sigel = (div.querySelector('.page-sigel')?.textContent || '').trim();
+      if (sigel) pages.push(sigel);
+    });
+
+    if (!pages.length) return;
+
+    var meta = state.corpus?.metadata || {};
+    var prefix = meta.citation_prefix || meta.siglum || 'AA';
+    var cite;
+
+    if (hasBA()) {
+      var first = pages[0].split(' · ')[0];
+      var lastArr = pages[pages.length - 1].split(' · ');
+      var last = lastArr[lastArr.length - 1];
+      cite = pages.length === 1 || first === last
+        ? '(' + prefix + ' ' + first + ')'
+        : '(' + prefix + ' ' + first + '–' + last + ')';
+    } else {
+      var firstPage = pages[0];
+      var lastPage = pages[pages.length - 1];
+      cite = pages.length === 1 || firstPage === lastPage
+        ? '(' + firstPage + ')'
+        : '(' + firstPage + '–' + lastPage.replace(/.*,\s*/, '') + ')';
+    }
+
+    var frag = range.cloneContents();
+    var wrapper = document.createElement('div');
+    wrapper.appendChild(frag);
+    wrapper.querySelectorAll('.page-sigel, .page-divider').forEach(function(el) { el.remove(); });
+
+    var plain = wrapper.textContent.replace(/\s+/g, ' ').trim() + ' ' + cite;
+    e.clipboardData.setData('text/plain', plain);
+    e.clipboardData.setData('text/html', wrapper.innerHTML + ' ' + cite);
+    e.preventDefault();
+  });
+
+  function showToast(msg) {
+    var toast = document.getElementById('reader-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'reader-toast';
+      toast.className = 'reader-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function() { toast.classList.remove('show'); }, 1800);
+  }
+
+  function setView(mode) {
+    var tc = document.querySelector('.text-content');
+    tc.classList.remove('wide-mode');
+    if (mode === 'breit') tc.classList.add('wide-mode');
+    document.querySelectorAll('#view-toggle button').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.view === mode);
+    });
+    try { localStorage.setItem('kant-reader-view', mode); } catch (_) {}
+  }
+  (function() {
+    try {
+      var v = localStorage.getItem('kant-reader-view');
+      if (v === 'breit') setView(v);
+    } catch (_) {}
+  })();
+
+  // Inline search
+  var searchHitPages = [];
+  var searchHitIdx = -1;
+  var searchActiveQuery = '';
+  var searchTerms = [];
+
+  function extractHighlightTerms(q) {
+    var stripped = q.replace(/\bAND\b|\bOR\b|\bNOT\b/gi, ' ');
+    var terms = [];
+    var re = /"([^"]+)"|([^\s"]+)/g, m;
+    while ((m = re.exec(stripped)) !== null) {
+      var t = (m[1] || m[2] || '').trim().toLowerCase().replace(/\*$/, '');
+      if (t) terms.push(t);
+    }
+    var unique = [];
+    for (var i = 0; i < terms.length; i++) {
+      if (unique.indexOf(terms[i]) === -1) unique.push(terms[i]);
+    }
+    return unique;
+  }
+
+  function textMatchesTerms(text, terms) {
+    var lower = text.toLowerCase();
+    for (var i = 0; i < terms.length; i++) {
+      if (lower.indexOf(terms[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  function clearSearchMarks() {
+    document.querySelectorAll('mark.search-hit').forEach(function(m) {
+      var parent = m.parentNode;
+      if (!parent) return;
+      parent.replaceChild(document.createTextNode(m.textContent), m);
+      parent.normalize();
+    });
+  }
+
+  function highlightTermsInCard(card, terms) {
+    var body = card.querySelector('.page-body');
+    if (!body || !body.innerHTML.trim()) return;
+    terms.forEach(function(term) {
+      var walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null);
+      var hits = [];
+      var node;
+      while ((node = walker.nextNode())) {
+        var lower = node.textContent.toLowerCase();
+        var idx = 0;
+        while ((idx = lower.indexOf(term, idx)) !== -1) {
+          hits.push({ node: node, idx: idx, len: term.length });
+          idx += term.length;
+        }
+      }
+      for (var i = hits.length - 1; i >= 0; i--) {
+        try {
+          var range = document.createRange();
+          range.setStart(hits[i].node, hits[i].idx);
+          range.setEnd(hits[i].node, hits[i].idx + hits[i].len);
+          var mark = document.createElement('mark');
+          mark.className = 'search-hit';
+          range.surroundContents(mark);
+        } catch (_) {}
+      }
+    });
+  }
+
+  function runInlineSearch() {
+    clearSearchMarks();
+    searchHitPages = [];
+    searchHitIdx = -1;
+    var query = document.getElementById('inline-search').value.trim();
+    if (query.length < 2) {
+      searchActiveQuery = '';
+      document.getElementById('inline-search-count').textContent = '';
+      return;
+    }
+    searchActiveQuery = query;
+    searchTerms = extractHighlightTerms(query);
+
+    if (!state.bodyPages) return;
+    state.bodyPages.forEach(function(p) {
+      var fullText = (p.units || []).map(function(u) { return u.text || ''; }).join(' ');
+      if (textMatchesTerms(fullText, searchTerms)) {
+        searchHitPages.push(p.page_pdf);
+      }
+    });
+
+    var countEl = document.getElementById('inline-search-count');
+    if (searchHitPages.length) {
+      countEl.textContent = searchHitPages.length + (searchHitPages.length === 1 ? ' Seite' : ' Seiten');
+    } else {
+      countEl.textContent = 'Keine Treffer';
+    }
+  }
+
+  function inlineSearchGoTo(idx) {
+    if (!searchHitPages.length) return;
+    searchHitIdx = idx;
+    var pagePdf = searchHitPages[idx];
+    var hash = '#page-' + pagePdf;
+    ensureRendered(hash);
+    requestAnimationFrame(function() {
+      setTimeout(function() {
+        var card = document.querySelector('.page-card[data-page-pdf="' + pagePdf + '"]');
+        if (!card) return;
+        clearSearchMarks();
+        highlightTermsInCard(card, searchTerms);
+        var firstMark = card.querySelector('mark.search-hit');
+        if (firstMark) {
+          scrollToElement(firstMark, false);
+          firstMark.classList.add('search-hit-active');
+        } else {
+          scrollAndSettle(card, hash);
+        }
+        document.getElementById('inline-search-count').textContent =
+          (idx + 1) + ' / ' + searchHitPages.length + ' Seiten';
+      }, 120);
+    });
+  }
+
+  function inlineSearchNav(dir) {
+    if (!searchHitPages.length) return;
+    if (searchHitIdx < 0) inlineSearchGoTo(0);
+    else inlineSearchGoTo((searchHitIdx + dir + searchHitPages.length) % searchHitPages.length);
+  }
+
+  function inlineSearchOrNav(dir) {
+    var query = document.getElementById('inline-search').value.trim();
+    if (query !== searchActiveQuery || !searchHitPages.length) {
+      runInlineSearch();
+      if (searchHitPages.length) inlineSearchGoTo(0);
+    } else {
+      inlineSearchNav(dir);
+    }
+  }
+
+  (function() {
+    var input = document.getElementById('inline-search');
+    var timer;
+    input.addEventListener('input', function() {
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        if (input.value.trim() !== searchActiveQuery) runInlineSearch();
+      }, 400);
+    });
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timer); inlineSearchOrNav(e.shiftKey ? -1 : 1); }
+      if (e.key === 'Escape') {
+        input.value = ''; searchActiveQuery = ''; searchHitPages = []; searchHitIdx = -1;
+        clearSearchMarks(); document.getElementById('inline-search-count').textContent = ''; input.blur();
+      }
+    });
+  })();
+
+  document.getElementById('jump-b-page').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); handleJumpToMarker(); }
+  });
+  document.getElementById('jump-aa-page').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); handleJumpToAA(); }
+  });
+
+  function highlightSearchQuery(q, hash) {
+    var terms = extractHighlightTerms(q.toLowerCase());
+    if (!terms.length) return;
+    document.getElementById('inline-search').value = q;
+    searchActiveQuery = q; searchTerms = terms;
+    runInlineSearch();
+    if (hash) {
+      ensureRendered(hash);
+      requestAnimationFrame(function() {
+        setTimeout(function() {
+          var target = document.querySelector(hash);
+          if (target) {
+            var card = target.closest('.page-card') || target.nextElementSibling;
+            if (card) highlightTermsInCard(card, terms);
+            var firstMark = card?.querySelector('mark.search-hit');
+            if (firstMark) { scrollToElement(firstMark, false); firstMark.classList.add('search-hit-active'); }
+            else if (target) scrollAndSettle(target, hash);
+          }
+        }, 120);
+      });
+    } else if (searchHitPages.length) {
+      inlineSearchGoTo(0);
+    }
+  }
+
+  var fontStep = parseInt(localStorage.getItem('kant-font-step') || '0');
+  function applyFontSize() {
+    document.getElementById('reader-pages').style.fontSize = (17 + fontStep * 2) + 'px';
+  }
+  function adjustFontSize(dir) {
+    fontStep = Math.max(-3, Math.min(5, fontStep + dir));
+    localStorage.setItem('kant-font-step', fontStep);
+    applyFontSize();
+  }
+  applyFontSize();
+
+  // Reading progress + page position
+  (function() {
+    var bar = document.getElementById('reading-progress');
+    var posEl = document.getElementById('page-position');
+    var ticking = false;
+    var hideTimer;
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        requestAnimationFrame(function() {
+          var h = document.documentElement.scrollHeight - window.innerHeight;
+          var pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+          bar.style.width = pct + '%';
+          if (state.bodyPages && state.bodyPages.length) {
+            var cards = document.querySelectorAll('#reader-pages .page-card');
+            var current = null;
+            for (var i = 0; i < cards.length; i++) {
+              if (cards[i].getBoundingClientRect().top <= 120) current = cards[i];
+            }
+            if (current) {
+              var idx = Array.from(cards).indexOf(current);
+              var p = state.bodyPages[idx];
+              var sigel = p ? p.sigel : '';
+              posEl.textContent = (idx + 1) + ' / ' + state.bodyPages.length + (sigel ? ' · ' + sigel : '');
+              posEl.classList.add('visible');
+              clearTimeout(hideTimer);
+              hideTimer = setTimeout(function() { posEl.classList.remove('visible'); }, 2000);
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, {passive: true});
+  })();
+
+  function toggleMobileToc() {
+    var sidebar = document.getElementById('reader-sidebar');
+    var backdrop = document.getElementById('mobile-backdrop');
+    var toggle = document.getElementById('mobile-toc-toggle');
+    var open = sidebar.classList.toggle('mobile-open');
+    backdrop.classList.toggle('visible', open);
+    toggle.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  document.getElementById('reader-sidebar').addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') {
+      this.classList.remove('mobile-open');
+      document.getElementById('mobile-backdrop').classList.remove('visible');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+    var pages = document.querySelectorAll('#reader-pages .page-card');
+    if (!pages.length) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      var current = 0;
+      for (var i = 0; i < pages.length; i++) {
+        if (pages[i].getBoundingClientRect().top <= 120) current = i;
+      }
+      var next = e.key === 'ArrowRight' ? Math.min(current + 1, pages.length - 1) : Math.max(current - 1, 0);
+      pages[next].scrollIntoView({behavior: 'instant', block: 'start'});
+    }
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); document.getElementById('inline-search').focus(); }
+    if (e.key === 't' && !e.ctrlKey && !e.metaKey) toggleMobileToc();
+  });
+
+  (function() {
+    var tocLinks = [];
+    var activeLi = null;
+    var ticking = false;
+    function buildTocMap() {
+      tocLinks = [];
+      document.querySelectorAll('#toc-list a[href^="#"]').forEach(function(a) {
+        tocLinks.push({ id: a.getAttribute('href').slice(1), li: a.closest('li') });
+      });
+    }
+    function updateSpy() {
+      var header = document.querySelector('.site-header');
+      var sticky = document.getElementById('reader-sticky-bar');
+      var offset = (header ? header.getBoundingClientRect().height : 56)
+                 + (sticky ? sticky.getBoundingClientRect().height : 0) + 24;
+      var current = null;
+      for (var i = tocLinks.length - 1; i >= 0; i--) {
+        var el = document.getElementById(tocLinks[i].id);
+        if (el && el.getBoundingClientRect().top <= offset) { current = tocLinks[i]; break; }
+      }
+      if (activeLi) activeLi.classList.remove('toc-active');
+      if (current) {
+        current.li.classList.add('toc-active');
+        activeLi = current.li;
+        var sidebar = document.getElementById('reader-sidebar');
+        if (current.li.offsetTop < sidebar.scrollTop || current.li.offsetTop > sidebar.scrollTop + sidebar.clientHeight - 40) {
+          sidebar.scrollTop = current.li.offsetTop - sidebar.clientHeight / 3;
+        }
+      }
+    }
+    window.addEventListener('scroll', function() {
+      if (!ticking) { requestAnimationFrame(function() { updateSpy(); ticking = false; }); ticking = true; }
+    }, {passive: true});
+    var obs = new MutationObserver(function() {
+      if (document.querySelectorAll('#toc-list li').length > 0) { buildTocMap(); obs.disconnect(); }
+    });
+    obs.observe(document.getElementById('toc-list'), { childList: true });
+  })();
+
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      e.preventDefault();
+      document.getElementById('inline-search').focus();
+      document.getElementById('inline-search').select();
+    }
+  });
+
+  (function() {
+    var KEY = 'kant-reading-pos';
+    var saveTimer;
+    function savePosition() {
+      var cards = document.querySelectorAll('#reader-pages .page-card');
+      if (!cards.length) return;
+      var topCard = null;
+      for (var i = 0; i < cards.length; i++) {
+        if (cards[i].getBoundingClientRect().top > -100) { topCard = cards[i]; break; }
+      }
+      if (!topCard) topCard = cards[cards.length - 1];
+      var workId = new URLSearchParams(window.location.search).get('work') || 'aa-III';
+      try { localStorage.setItem(KEY, JSON.stringify({ work: workId, page: topCard.dataset.pagePdf, ts: Date.now() })); } catch (_) {}
+    }
+    window.addEventListener('scroll', function() {
+      clearTimeout(saveTimer); saveTimer = setTimeout(savePosition, 800);
+    }, {passive: true});
+    window._restoreReadingPosition = function() {
+      if (window.location.hash) return;
+      if (new URLSearchParams(window.location.search).get('q')) return;
+      try {
+        var saved = JSON.parse(localStorage.getItem(KEY));
+        if (!saved || !saved.page) return;
+        var workId = new URLSearchParams(window.location.search).get('work') || 'aa-III';
+        if (saved.work !== workId) return;
+        if (Date.now() - saved.ts > 7 * 24 * 60 * 60 * 1000) return;
+        var hash = '#page-' + saved.page;
+        ensureRendered(hash);
+        requestAnimationFrame(function() {
+          var target = document.querySelector(hash);
+          if (target) scrollToElement(target, false);
+        });
+      } catch (_) {}
+    };
+  })();
+
+  function toggleTheme() {
+    var t = document.documentElement.dataset.theme === 'light' ? '' : 'light';
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('kant-theme', t);
+  }
+</script>
+</body>
+</html>

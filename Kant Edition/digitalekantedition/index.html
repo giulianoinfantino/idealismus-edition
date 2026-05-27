@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kant &middot; Digitale Edition</title>
+  <meta name="description" content="Frei zug&auml;ngliche, durchsuchbare Digitalausgabe ausgew&auml;hlter Werke Immanuel Kants auf Grundlage der Akademie-Ausgabe (AA).">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#232229">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>document.documentElement.dataset.theme=localStorage.getItem('kant-theme')||''</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Digitale Kant-Edition",
+    "description": "Frei zug&auml;ngliche Digitalausgabe ausgew&auml;hlter Werke Immanuel Kants auf Grundlage der Akademie-Ausgabe.",
+    "inLanguage": "de",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Digitale Kant-Edition"
+    }
+  }
+  </script>
+</head>
+<body class="hero-page">
+<a href="#stats-bar" class="skip-link">Zum Inhalt springen</a>
+
+<header class="site-header" id="site-header" role="banner">
+  <a href="index.html" class="site-title" aria-label="Digitale Kant-Edition &mdash; Startseite">
+    <span class="site-title-eyebrow">Digitale Edition</span>
+    <span class="site-title-main">Kant &middot; Werke</span>
+  </a>
+  <nav class="sitenav" aria-label="Hauptnavigation">
+    <ul>
+      <li><a href="index.html" class="current" aria-current="page">Sammlung</a></li>
+      <li><a href="text.html">Lekt&uuml;re</a></li>
+      <li><a href="search.html">Recherche</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()" title="Darstellung wechseln" aria-label="Farbschema wechseln"></button></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Akademie-Ausgabe &middot; Bd.&nbsp;I&ndash;IX &middot; 18 Werke</div>
+    <h1 class="hero-title">Digitale<br>Kant-Edition</h1>
+    <div class="hero-version">v0.02</div>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">
+      Eine digitale Forschungsplattform f&uuml;r ausgew&auml;hlte Werke
+      Immanuel Kants, basierend auf der Akademie-Ausgabe (AA)
+      der Gesammelten Schriften.
+    </p>
+    <div class="hero-actions">
+      <a href="text.html" class="hero-btn-primary">Edition lesen</a>
+      <a href="search.html" class="hero-btn-secondary">Volltextsuche</a>
+    </div>
+  </div>
+  <div class="hero-scroll" onclick="window.scrollTo({top:window.innerHeight,behavior:'smooth'})">
+    <span>Entdecken</span>
+    <span class="hero-scroll-line"></span>
+  </div>
+</section>
+
+<div class="stats-bar" id="stats-bar"></div>
+
+<section class="lp-section featured-section">
+  <div class="reveal" data-reveal>
+    <div class="lp-section-label">Akademie-Ausgabe</div>
+    <div class="lp-section-title">Die B&auml;nde</div>
+  </div>
+  <div class="works-grid" id="works-grid"></div>
+</section>
+
+<section class="lp-section about-section">
+  <div class="reveal" data-reveal>
+    <div class="lp-section-label">Das Projekt</div>
+    <div class="lp-section-title">Kant digital &mdash; Akademie-Ausgabe, frei zug&auml;nglich</div>
+  </div>
+  <p class="about-lead reveal" data-reveal>
+    Die <em>Gesammelten Schriften</em> Kants, herausgegeben von der
+    K&ouml;niglich Preu&szlig;ischen Akademie der Wissenschaften (ab 1900),
+    sind der ma&szlig;gebliche Referenztext der Kant-Forschung.
+    Die fr&uuml;hen B&auml;nde sind gemeinfrei &mdash;
+    eine frei zug&auml;ngliche, durchsuchbare Digitalausgabe
+    macht sie nun f&uuml;r die Forschung verf&uuml;gbar.
+  </p>
+
+  <div class="about-cols reveal" data-reveal>
+    <div class="about-col">
+      <h3>Die Quelle</h3>
+      <p>
+        Grundlage ist <em>Kant im Kontext&nbsp;III</em> (Karsten Worm,
+        InfoSoftWare, 4.&nbsp;Aufl.&nbsp;2017), eine umfassende digitale
+        Aufbereitung der Akademie-Ausgabe mit 15.003&nbsp;Seiten.
+        Der Text wird in Originalrechtschreibung wiedergegeben &mdash;
+        <em>Verh&auml;ltni&szlig;</em>, <em>Erkenntni&szlig;</em>,
+        <em>da&szlig;</em>, <em>Urtheilskraft</em>.
+      </p>
+    </div>
+    <div class="about-col">
+      <h3>Urheberrecht</h3>
+      <p>
+        Kants Prim&auml;rtext (gest. 1804) ist seit langem gemeinfrei.
+        Die Akademie-Ausgabe Bd.&nbsp;I&ndash;IX (publiziert 1900&ndash;1923)
+        ist ebenfalls gemeinfrei. Diese Edition stellt den Text frei
+        und durchsuchbar zur Verf&uuml;gung, mit Seitenkonkordanzen
+        zur AA und werkspezifischen Zitationsweisen (z.B. KrV B).
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-section roadmap-section">
+  <div class="reveal" data-reveal>
+    <div class="lp-section-label">Status</div>
+    <div class="lp-section-title">AA Bd. I&ndash;IX verf&uuml;gbar</div>
+  </div>
+  <p class="about-lead reveal" data-reveal>
+    Die B&auml;nde I&ndash;IX der Akademie-Ausgabe sind vollst&auml;ndig digitalisiert
+    und durchsuchbar: 18&nbsp;Werke, &uuml;ber 2.800&nbsp;Seiten &mdash; von den
+    vorkritischen Schriften bis zur P&auml;dagogik.
+  </p>
+
+  <div class="roadmap-grid roadmap-grid--3 reveal" data-reveal>
+    <div class="roadmap-card">
+      <div class="roadmap-card-icon">I&ndash;II</div>
+      <h4>Vorkritische Schriften</h4>
+      <p>
+        785 Seiten: Gedanken von der wahren Sch&auml;tzung,
+        Allgemeine Naturgeschichte, Nova dilucidatio,
+        Tr&auml;ume eines Geistersehers, De mundi sensibilis u.a.
+      </p>
+    </div>
+    <div class="roadmap-card">
+      <div class="roadmap-card-icon">III&ndash;V</div>
+      <h4>Die drei Kritiken</h4>
+      <p>
+        KrV (B&nbsp;1787 mit A-Anhang, B/A-Seitenz&auml;hlung),
+        KpV (1788), KdU (1790) &mdash; zusammen 795 Seiten.
+      </p>
+    </div>
+    <div class="roadmap-card">
+      <div class="roadmap-card-icon">IV&ndash;IX</div>
+      <h4>Weitere Hauptwerke</h4>
+      <p>
+        Prolegomena, Grundlegung, MAN, Religion, Metaphysik
+        der Sitten, Zum ewigen Frieden, Anthropologie, Logik u.a.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-section workflow-section-wrap">
+  <div class="reveal" data-reveal>
+    <div class="lp-section-label">Methodik</div>
+    <div class="lp-section-title">Von der Akademie-Ausgabe zum digitalen Text</div>
+  </div>
+  <div class="workflow-steps reveal" data-reveal>
+    <div class="workflow-step">
+      <span class="workflow-step-num">1</span>
+      <span class="workflow-step-name">Quelle</span>
+      <span class="workflow-step-detail">Kant im Kontext III (2017): digitale Erfassung der Akademie-Ausgabe, 15.003&nbsp;Seiten</span>
+    </div>
+    <div class="workflow-step">
+      <span class="workflow-step-num">2</span>
+      <span class="workflow-step-name">Extraktion</span>
+      <span class="workflow-step-detail">Programmatische Textextraktion mit PyMuPDF, Parsing der AA-Seitenreferenzen und A/B-Marker</span>
+    </div>
+    <div class="workflow-step">
+      <span class="workflow-step-num">3</span>
+      <span class="workflow-step-name">Strukturierung</span>
+      <span class="workflow-step-detail">Kapitelstruktur, Absatzerkennung, A/B-Seitenz&auml;hlung f&uuml;r die KrV</span>
+    </div>
+    <div class="workflow-step">
+      <span class="workflow-step-num">4</span>
+      <span class="workflow-step-name">Recherche</span>
+      <span class="workflow-step-detail">Volltextsuche im Browser, AA-Seitenkonkordanz und werkspezifische Zitation</span>
+    </div>
+  </div>
+</section>
+
+<footer class="lp-footer">
+  <h3>Digitale Kant-Edition</h3>
+  <p>Forschungsportal &middot; Akademie-Ausgabe</p>
+  <nav>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+  </nav>
+</footer>
+
+<script src="assets/edition-data.js"></script>
+<script>
+  function renderStats(ed) {
+    var s = ed.metadata && ed.metadata.stats;
+    if (!s) return;
+    var n = ed.works.length;
+    document.getElementById('stats-bar').innerHTML =
+      '<div class="stat-item reveal" data-reveal>' +
+        '<span class="stat-value">' + n + '</span>' +
+        '<span class="stat-label">' + (n === 1 ? 'Band' : 'Bände') + '</span>' +
+      '</div>' +
+      '<div class="stat-item reveal" data-reveal>' +
+        '<span class="stat-value">' + (s.pages_total || 0).toLocaleString('de') + '</span>' +
+        '<span class="stat-label">Seiten</span>' +
+      '</div>' +
+      '<div class="stat-item reveal" data-reveal>' +
+        '<span class="stat-value">' + (s.search_entries || 0).toLocaleString('de') + '</span>' +
+        '<span class="stat-label">Indexeinträge</span>' +
+      '</div>' +
+      '<div class="stat-item reveal" data-reveal>' +
+        '<span class="stat-value">' + (s.headings || 0).toLocaleString('de') + '</span>' +
+        '<span class="stat-label">Abschnitte</span>' +
+      '</div>';
+  }
+
+  function renderWorks(ed) {
+    var html = (ed.works || []).map(function(w) {
+      var pg = w.stats ? w.stats.pages_total : '';
+      var meta = [];
+      if (pg) meta.push(pg + ' S.');
+      return '<a class="work-row" href="text.html?work=' + w.work_id + '">' +
+        '<span class="work-row-band">' + w.siglum + '</span>' +
+        '<span class="work-row-main">' +
+          '<span class="work-row-title">' + w.title + '</span>' +
+          '<span class="work-row-sig">' + w.siglum + '</span>' +
+        '</span>' +
+        (meta.length ? '<span class="work-row-meta">' + meta.join(' · ') + '</span>' : '') +
+        '<span class="work-row-arrow">&rarr;</span>' +
+      '</a>';
+    }).join('');
+    document.getElementById('works-grid').innerHTML = html;
+  }
+
+  if (window.KANT_EDITION) {
+    renderStats(window.KANT_EDITION);
+    renderWorks(window.KANT_EDITION);
+  }
+  function toggleTheme() {
+    var t = document.documentElement.dataset.theme === 'light' ? '' : 'light';
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('kant-theme', t);
+  }
+</script>
+</body>
+</html>
