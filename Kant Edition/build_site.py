@@ -217,18 +217,26 @@ def split_pages(raw_pages: list[dict]) -> list[dict]:
         pre_marker = [pa for pa in paragraphs[:first_break_idx]
                       if pa["kind"] != "page_break"]
 
+        sub = 0
+        if pre_marker:
+            page = dict(p)
+            page["page_id"] = f"{p['page_pdf']}_{sub}"
+            page["paragraphs"] = pre_marker
+            page["page_markers"] = []
+            result.append(page)
+            sub += 1
+
         for bi, (brk_idx, marker) in enumerate(breaks):
             next_brk = breaks[bi + 1][0] if bi + 1 < len(breaks) else len(paragraphs)
             section_paras = [pa for pa in paragraphs[brk_idx + 1:next_brk]
                             if pa["kind"] != "page_break"]
-            if bi == 0 and pre_marker:
-                section_paras = pre_marker + section_paras
 
             page = dict(p)
-            page["page_id"] = f"{p['page_pdf']}_{bi}"
+            page["page_id"] = f"{p['page_pdf']}_{sub}"
             page["paragraphs"] = section_paras
             page["page_markers"] = [marker] if marker else []
             result.append(page)
+            sub += 1
 
     return result
 
@@ -323,19 +331,55 @@ def convert_page(p: dict, citation_prefix: str, citation_systems: list[str]) -> 
 
 def assign_page_books(pages: list[dict], citation_prefix: str,
                       citation_systems: list[str]) -> list[dict]:
-    """Fill in page_book and sigel for pages that lack markers."""
-    last_aa = None
-    last_sigel = ""
+    """Fill in page_book and sigel for pages without markers.
+
+    For unmarked pages between two known pages, infer the page_book
+    by distributing gap numbers evenly.
+    """
+    # Forward pass: assign page_book from previous known page
+    last_known = None
     for p in pages:
         if p["page_book"] is not None:
-            last_aa = p["page_book"]
-        elif last_aa is not None:
-            p["page_book"] = last_aa
-        if "AA" in citation_systems and p["page_book"] is not None and not p["sigel"]:
-            p["sigel"] = f"{citation_prefix}, {p['page_book']}"
+            last_known = p["page_book"]
+        elif last_known is not None:
+            p["page_book"] = last_known
+
+    # Gap-fill pass: for unmarked pages between two known markers,
+    # infer intermediate page numbers
+    i = 0
+    while i < len(pages):
+        if pages[i].get("markers"):
+            i += 1
+            continue
+        # Find run of unmarked pages
+        start = i
+        while i < len(pages) and not pages[i].get("markers"):
+            i += 1
+        end = i
+        # Get bounding page_books
+        prev_pb = pages[start - 1]["page_book"] if start > 0 and pages[start - 1].get("page_book") is not None else None
+        next_pb = pages[end]["page_book"] if end < len(pages) and pages[end].get("page_book") is not None else None
+        if prev_pb is not None and next_pb is not None and next_pb > prev_pb + 1:
+            gap_size = next_pb - prev_pb - 1
+            run_len = end - start
+            for j in range(run_len):
+                inferred = prev_pb + 1 + int(j * gap_size / run_len)
+                pages[start + j]["page_book"] = inferred
+
+    # Assign sigels
+    for p in pages:
+        if p["page_book"] is not None and not p["sigel"]:
+            if "AA" in citation_systems:
+                p["sigel"] = f"{citation_prefix}, {p['page_book']}"
+            elif "B" in citation_systems or "A" in citation_systems:
+                pass  # B/A sigels come from markers only
+
+    # Propagate sigels for any remaining gaps
+    last_sigel = ""
+    for p in pages:
         if p["sigel"]:
             last_sigel = p["sigel"]
-        elif last_sigel and p["page_kind"] == "body":
+        elif last_sigel and p["page_kind"] in ("body", "frontmatter"):
             p["sigel"] = last_sigel
     return pages
 

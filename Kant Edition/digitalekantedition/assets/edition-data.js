@@ -2,12 +2,12 @@ window.KANT_EDITION = {
   "metadata": {
     "title": "Digitale Kant-Edition",
     "collection_title": "Immanuel Kant · Gesammelte Schriften (Akademie-Ausgabe)",
-    "generated_at": "2026-05-27T19:21:37Z",
+    "generated_at": "2026-05-27T21:16:22Z",
     "works_count": 19,
     "default_work_id": "aa-I",
     "stats": {
-      "pages_total": 5269,
-      "search_entries": 34564,
+      "pages_total": 7447,
+      "search_entries": 35937,
       "headings": 874
     }
   },
@@ -20,11 +20,11 @@ window.KANT_EDITION = {
       "short_title": "Vorkrit. Schriften I",
       "siglum": "AA I",
       "stats": {
-        "pages_total": 630,
-        "pages_body": 604,
+        "pages_total": 900,
+        "pages_body": 858,
         "headings": 175,
         "paragraphs": 1314,
-        "search_entries": 4567
+        "search_entries": 4719
       }
     },
     {
@@ -35,11 +35,11 @@ window.KANT_EDITION = {
       "short_title": "Vorkrit. Schriften II",
       "siglum": "AA II",
       "stats": {
-        "pages_total": 642,
-        "pages_body": 628,
+        "pages_total": 894,
+        "pages_body": 870,
         "headings": 124,
         "paragraphs": 1791,
-        "search_entries": 4550
+        "search_entries": 4713
       }
     },
     {
@@ -50,11 +50,11 @@ window.KANT_EDITION = {
       "short_title": "Kritik der reinen Vernunft (B)",
       "siglum": "KrV",
       "stats": {
-        "pages_total": 1028,
-        "pages_body": 1017,
+        "pages_total": 1354,
+        "pages_body": 1336,
         "headings": 146,
         "paragraphs": 1511,
-        "search_entries": 4743
+        "search_entries": 4909
       }
     },
     {
@@ -65,11 +65,11 @@ window.KANT_EDITION = {
       "short_title": "KrV Anhang (A)",
       "siglum": "KrV",
       "stats": {
-        "pages_total": 158,
-        "pages_body": 157,
+        "pages_total": 209,
+        "pages_body": 208,
         "headings": 9,
         "paragraphs": 231,
-        "search_entries": 703
+        "search_entries": 735
       }
     },
     {
@@ -80,11 +80,11 @@ window.KANT_EDITION = {
       "short_title": "Prolegomena",
       "siglum": "AA IV",
       "stats": {
-        "pages_total": 159,
-        "pages_body": 157,
+        "pages_total": 234,
+        "pages_body": 232,
         "headings": 18,
         "paragraphs": 311,
-        "search_entries": 1081
+        "search_entries": 1131
       }
     },
     {
@@ -95,11 +95,11 @@ window.KANT_EDITION = {
       "short_title": "Grundlegung (GMS)",
       "siglum": "AA IV",
       "stats": {
-        "pages_total": 92,
-        "pages_body": 90,
+        "pages_total": 135,
+        "pages_body": 133,
         "headings": 5,
         "paragraphs": 161,
-        "search_entries": 666
+        "search_entries": 689
       }
     },
     {
@@ -110,11 +110,11 @@ window.KANT_EDITION = {
       "short_title": "Met. Anfangsgr. (MAN)",
       "siglum": "AA IV",
       "stats": {
-        "pages_total": 74,
-        "pages_body": 72,
+        "pages_total": 93,
+        "pages_body": 91,
         "headings": 5,
         "paragraphs": 193,
-        "search_entries": 849
+        "search_entries": 865
       }
     },
     {
@@ -125,11 +125,11 @@ window.KANT_EDITION = {
       "short_title": "Kritik der prakt. Vernunft",
       "siglum": "AA V",
       "stats": {
-        "pages_total": 201,
-        "pages_body": 199,
+        "pages_total": 286,
+        "pages_body": 284,
         "headings": 37,
         "paragraphs": 316,
-        "search_entries": 1378
+        "search_entries": 1434
       }
     },
     {
@@ -140,11 +140,11 @@ window.KANT_EDITION = {
       "short_title": "Kritik der Urtheilskraft",
       "siglum": "AA V",
       "stats": {
-        "pages_total": 435,
-        "pages_body": 427,
+        "pages_total": 636,
+        "pages_body": 626,
         "headings": 102,
         "paragraphs": 713,
-        "search_entries": 2663
+        "search_entries": 2802
       }
     },
     {
@@ -155,11 +155,11 @@ window.KANT_EDITION = {
       "short_title": "Religion",
       "siglum": "AA VI",
       "stats": {
-        "pages_total": 257,
-        "pages_body": 249,
+        "pages_total": 352,
+        "pages_body": 340,
         "headings": 26,
         "paragraphs": 387,
-        "search_entries": 1687
+        "search_entries": 1751
       }
     },
     {
@@ -170,11 +170,11 @@ window.KANT_EDITION = {
       "short_title": "Metaphysik der Sitten",
       "siglum": "AA VI",
       "stats": {
-        "pages_total": 455,
-        "pages_body": 439,
+        "pages_total": 685,
+        "pages_body": 663,
         "headings": 80,
         "paragraphs": 804,
-        "search_entries": 2191
+        "search_entries": 2366
       }
     },
     {
@@ -185,11 +185,11 @@ window.KANT_EDITION = {
       "short_title": "Streit der Facultäten",
       "siglum": "AA VII",
       "stats": {
-        "pages_total": 138,
-        "pages_body": 130,
+        "pages_total": 203,
+        "pages_body": 191,
         "headings": 5,
         "paragraphs": 251,
-        "search_entries": 850
+        "search_entries": 899
       }
     },
     {
@@ -200,11 +200,11 @@ window.KANT_EDITION = {
       "short_title": "Anthropologie",
       "siglum": "AA VII",
       "stats": {
-        "pages_total": 168,
-        "pages_body": 166,
+        "pages_total": 247,
+        "pages_body": 245,
         "headings": 13,
         "paragraphs": 348,
-        "search_entries": 1695
+        "search_entries": 1764
       }
     },
     {
@@ -215,11 +215,11 @@ window.KANT_EDITION = {
       "short_title": "Über eine Entdeckung",
       "siglum": "AA VIII",
       "stats": {
-        "pages_total": 45,
-        "pages_body": 42,
+        "pages_total": 55,
+        "pages_body": 52,
         "headings": 2,
         "paragraphs": 64,
-        "search_entries": 559
+        "search_entries": 564
       }
     },
     {
@@ -230,11 +230,11 @@ window.KANT_EDITION = {
       "short_title": "Zum ewigen Frieden",
       "siglum": "AA VIII",
       "stats": {
-        "pages_total": 35,
-        "pages_body": 33,
+        "pages_total": 49,
+        "pages_body": 47,
         "headings": 2,
         "paragraphs": 70,
-        "search_entries": 389
+        "search_entries": 398
       }
     },
     {
@@ -245,11 +245,11 @@ window.KANT_EDITION = {
       "short_title": "Kleine Schriften",
       "siglum": "AA VIII",
       "stats": {
-        "pages_total": 219,
-        "pages_body": 219,
+        "pages_total": 307,
+        "pages_body": 307,
         "headings": 41,
         "paragraphs": 395,
-        "search_entries": 2309
+        "search_entries": 2356
       }
     },
     {
@@ -260,11 +260,11 @@ window.KANT_EDITION = {
       "short_title": "Logik",
       "siglum": "AA IX",
       "stats": {
-        "pages_total": 164,
-        "pages_body": 160,
+        "pages_total": 249,
+        "pages_body": 243,
         "headings": 14,
         "paragraphs": 557,
-        "search_entries": 1032
+        "search_entries": 1083
       }
     },
     {
@@ -275,11 +275,11 @@ window.KANT_EDITION = {
       "short_title": "Physische Geographie",
       "siglum": "AA IX",
       "stats": {
-        "pages_total": 304,
-        "pages_body": 300,
+        "pages_total": 461,
+        "pages_body": 455,
         "headings": 69,
         "paragraphs": 452,
-        "search_entries": 2172
+        "search_entries": 2258
       }
     },
     {
@@ -290,11 +290,11 @@ window.KANT_EDITION = {
       "short_title": "Pädagogik",
       "siglum": "AA IX",
       "stats": {
-        "pages_total": 65,
-        "pages_body": 62,
+        "pages_total": 98,
+        "pages_body": 95,
         "headings": 1,
         "paragraphs": 114,
-        "search_entries": 480
+        "search_entries": 501
       }
     }
   ]
