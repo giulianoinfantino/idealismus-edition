@@ -101,6 +101,8 @@ RE_SEITE = re.compile(r"Seite:\s*(\d+)")
 RE_B_PAGE = re.compile(r"^(B\s*(?:III|II|IV|IX|VIII|VII|VI|V|X{0,3}(?:IX|IV|V?I{0,3})|[XLCDM]*|\d+))\s*R?\s*$")
 RE_A_PAGE = re.compile(r"^(A\s*(?:III|II|IV|IX|VIII|VII|VI|V|X{0,3}(?:IX|IV|V?I{0,3})|[XLCDM]*|\d+))\s*R?\s*$")
 RE_AA_PAGE = re.compile(r"^(VIII|VII|VI|IV|IX|V|III|II|I)(\d+)\s*R?\s*$")
+RE_AA_PAGE_START = re.compile(r"^(VIII|VII|VI|IV|IX|V|III|II|I)(\d+)\s*R?\s+")
+RE_AA_MARKER_INLINE = re.compile(r"//(VIII|VII|VI|IV|IX|V|III|II|I)(\d+)//?")
 RE_B_MARKER_INLINE = re.compile(r"//B(\d+[A-Z]?)//?")
 RE_WORM_NOTE = re.compile(r"^°+\s")
 RE_EDITORIAL = re.compile(r"°+")
@@ -238,6 +240,8 @@ def classify_line(parts: list[dict]) -> str:
     full_text = "".join(p["text"] for p in parts).strip()
     if RE_B_PAGE.match(full_text) or RE_A_PAGE.match(full_text) or RE_AA_PAGE.match(full_text):
         return "marker"
+    if RE_AA_PAGE_START.match(full_text):
+        return "marker_start"
 
     # Small text only → could be a page number or footnote marker
     if all(p["fmt"] == "small" for p in non_empty):
@@ -248,6 +252,7 @@ def classify_line(parts: list[dict]) -> str:
 
 def clean_text(text: str) -> str:
     text = RE_B_MARKER_INLINE.sub("", text)
+    text = RE_AA_MARKER_INLINE.sub("", text)
     text = text.replace("||", "|")
     text = text.replace("|", "")
     text = RE_EDITORIAL.sub("", text)
@@ -350,6 +355,22 @@ def extract_page(doc: fitz.Document, pdf_page: int) -> dict:
                 paragraphs.append({"kind": "page_break", "text": "", "marker": marker})
                 continue
 
+        if line_type == "marker_start":
+            aam = RE_AA_PAGE_START.match(full_text)
+            if aam:
+                band = aam.group(1)
+                page_num = int(aam.group(2))
+                marker = {"system": "AA", "band": band, "page": page_num, "ref": f"{band}{page_num}"}
+                page_markers.append(marker)
+                flush()
+                paragraphs.append({"kind": "page_break", "text": "", "marker": marker})
+                remainder = full_text[aam.end():].strip()
+                if remainder:
+                    remainder = clean_text(remainder)
+                    if remainder:
+                        current_para_lines.append(remainder)
+                continue
+
         # Check for Worm editorial notes
         if RE_WORM_NOTE.match(full_text):
             has_editorial = True
@@ -358,6 +379,12 @@ def extract_page(doc: fitz.Document, pdf_page: int) -> dict:
         # Check for inline B-markers
         for inline_m in RE_B_MARKER_INLINE.finditer(full_text):
             page_markers.append({"system": "B", "ref": f"B{inline_m.group(1)}"})
+
+        # Check for inline AA-markers (//VII123// style) — record but don't split
+        for inline_m in RE_AA_MARKER_INLINE.finditer(full_text):
+            band = inline_m.group(1)
+            page_num = int(inline_m.group(2))
+            page_markers.append({"system": "AA", "band": band, "page": page_num, "ref": f"{band}{page_num}"})
 
         # Format text with markers
         formatted_text, fmts_used = format_line_text(fmt_line)

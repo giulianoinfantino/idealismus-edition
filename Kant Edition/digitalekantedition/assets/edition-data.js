@@ -2,12 +2,12 @@ window.KANT_EDITION = {
   "metadata": {
     "title": "Digitale Kant-Edition",
     "collection_title": "Immanuel Kant · Gesammelte Schriften (Akademie-Ausgabe)",
-    "generated_at": "2026-05-27T21:16:22Z",
+    "generated_at": "2026-05-28T15:25:44Z",
     "works_count": 19,
     "default_work_id": "aa-I",
     "stats": {
-      "pages_total": 7447,
-      "search_entries": 35937,
+      "pages_total": 7928,
+      "search_entries": 36160,
       "headings": 874
     }
   },
@@ -39,7 +39,7 @@ window.KANT_EDITION = {
         "pages_body": 870,
         "headings": 124,
         "paragraphs": 1791,
-        "search_entries": 4713
+        "search_entries": 4711
       }
     },
     {
@@ -110,11 +110,11 @@ window.KANT_EDITION = {
       "short_title": "Met. Anfangsgr. (MAN)",
       "siglum": "AA IV",
       "stats": {
-        "pages_total": 93,
-        "pages_body": 91,
+        "pages_total": 169,
+        "pages_body": 167,
         "headings": 5,
-        "paragraphs": 193,
-        "search_entries": 865
+        "paragraphs": 269,
+        "search_entries": 900
       }
     },
     {
@@ -159,7 +159,7 @@ window.KANT_EDITION = {
         "pages_body": 340,
         "headings": 26,
         "paragraphs": 387,
-        "search_entries": 1751
+        "search_entries": 1748
       }
     },
     {
@@ -185,11 +185,11 @@ window.KANT_EDITION = {
       "short_title": "Streit der Facultäten",
       "siglum": "AA VII",
       "stats": {
-        "pages_total": 203,
-        "pages_body": 191,
+        "pages_total": 215,
+        "pages_body": 203,
         "headings": 5,
-        "paragraphs": 251,
-        "search_entries": 899
+        "paragraphs": 263,
+        "search_entries": 904
       }
     },
     {
@@ -200,11 +200,11 @@ window.KANT_EDITION = {
       "short_title": "Anthropologie",
       "siglum": "AA VII",
       "stats": {
-        "pages_total": 247,
-        "pages_body": 245,
+        "pages_total": 419,
+        "pages_body": 417,
         "headings": 13,
-        "paragraphs": 348,
-        "search_entries": 1764
+        "paragraphs": 520,
+        "search_entries": 1845
       }
     },
     {
@@ -215,11 +215,11 @@ window.KANT_EDITION = {
       "short_title": "Über eine Entdeckung",
       "siglum": "AA VIII",
       "stats": {
-        "pages_total": 55,
-        "pages_body": 52,
+        "pages_total": 110,
+        "pages_body": 107,
         "headings": 2,
-        "paragraphs": 64,
-        "search_entries": 564
+        "paragraphs": 119,
+        "search_entries": 590
       }
     },
     {
@@ -230,11 +230,11 @@ window.KANT_EDITION = {
       "short_title": "Zum ewigen Frieden",
       "siglum": "AA VIII",
       "stats": {
-        "pages_total": 49,
-        "pages_body": 47,
+        "pages_total": 81,
+        "pages_body": 79,
         "headings": 2,
-        "paragraphs": 70,
-        "search_entries": 398
+        "paragraphs": 102,
+        "search_entries": 414
       }
     },
     {
@@ -245,11 +245,11 @@ window.KANT_EDITION = {
       "short_title": "Kleine Schriften",
       "siglum": "AA VIII",
       "stats": {
-        "pages_total": 307,
-        "pages_body": 307,
+        "pages_total": 441,
+        "pages_body": 441,
         "headings": 41,
-        "paragraphs": 395,
-        "search_entries": 2356
+        "paragraphs": 529,
+        "search_entries": 2421
       }
     },
     {
